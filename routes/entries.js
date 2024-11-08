@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import db from '../db/index.js'
-import customErrorTryCatchHandler from '../util/customErrorTryCatchHandler.js'
+import tryCatchWrapper from '../util/tryCatchWrapper.js'
 
 const baseQuery = `
     SELECT 
@@ -14,16 +14,16 @@ const baseQuery = `
         e.returned_at,
         er.value reason
     FROM entries e 
-    JOIN users u ON u.id = e.user_id 
-    JOIN devices d ON d.id = e.device_id
-    JOIN entry_reason er ON er.id = e.reason
-    JOIN device_status s ON s.id = d.status
+    LEFT JOIN users u ON u.id = e.user_id 
+    LEFT JOIN devices d ON d.id = e.device_id
+    LEFT JOIN entry_reason er ON er.id = e.reason
+    LEFT JOIN device_status s ON s.id = d.status
     `
 
 const entriesRouter = Router()
 
-entriesRouter.route('/').get(customErrorTryCatchHandler(getAllEntries))
-entriesRouter.route('/date').get(customErrorTryCatchHandler(filterByTime))
+entriesRouter.route('/').get(tryCatchWrapper(getAllEntries))
+entriesRouter.route('/date').get(tryCatchWrapper(filterByTime))
 
 async function getAllEntries(req, res) {
   const { user, device } = req.query
@@ -36,6 +36,7 @@ async function getAllEntries(req, res) {
     query += 'WHERE d.name ILIKE $1'
     values.push(`%${device}%`)
   }
+  query += 'ORDER BY rented_at'
   const dbRes = await db.query(query, values)
   res.status(200).send(dbRes.rows)
 }
@@ -56,7 +57,6 @@ async function filterByTime(req, res) {
   } else {
     query += 'ORDER BY rented_at DESC'
   }
-  console.log(query)
 
   const dbRes = await db.query(query, values)
   res.status(200).send(dbRes.rows)

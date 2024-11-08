@@ -8,8 +8,8 @@ export class RouterEndPoint {
   }
 }
 
-export default function configureRoutes(server, config) {
-  config.forEach(ep => {
+export default function configureRoutes({ server, routers }) {
+  routers.forEach(ep => {
     server.use(ep.route, ep.router)
   })
 }

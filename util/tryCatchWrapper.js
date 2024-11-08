@@ -1,4 +1,4 @@
-export default function customErrorTryCatchHandler(fn) {
+export default function tryCatchWrapper(fn) {
   return async function (req, res, next) {
     try {
       await fn(req, res, next)
