@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt'
 import db from '../db/index.js'
-import jwt from 'jsonwebtoken'
 import { Router } from 'express'
 import { validateFields } from '../util/vaildator.js'
 import { ValidationConstraint } from '../util/vaildator.js'
@@ -42,93 +41,64 @@ async function loginUser(req, res, next) {
   const dbResponse = await db.query('SELECT * FROM users where email = $1', [
     email,
   ])
-  if (dbResponse.rowCount !== 1) {
-    throw new CustomError(404, 'User not found')
-  }
+  if (dbResponse.rowCount !== 1) throw new CustomError(404, 'User not found')
 
   const { password: passwordFromDb, ...userPayload } = dbResponse.rows[0]
-
   const isValidPassword = await bcrypt.compare(password, passwordFromDb)
-  if (!isValidPassword) {
-    throw new CustomError(400, 'Invalid Password')
-  }
+  if (!isValidPassword) throw new CustomError(400, 'Invalid Password')
 
-  let accessToken, refreshToken
-
-  const userTokenInDbResponse = await db.query(
+  const { rowCount, rows } = await db.query(
     `SELECT * FROM user_tokens WHERE user_id = $1`,
     [userPayload.id]
   )
 
-  if (userTokenInDbResponse.rowCount === 0) {
-    ({ accessToken, refreshToken } = createTokens(userPayload))
-    await storeTokens(userPayload.id, accessToken, refreshToken)
-  } else {
-    const tokens = userTokenInDbResponse.rows[0]
-    refreshToken = tokens.refresh_token
-    accessToken = await validateAccessToken(tokens.access_token, userPayload)
-  }
-  res.status(200).send({ message: 'Logged In', accessToken, refreshToken })
-}
+  const { access_token, refresh_token } =
+    rowCount === 0
+      ? await createAndStoreTokens(userPayload.id)
+      : rows[0].expiresat.getTime() < new Date().getTime()
+      ? await updateAccessToken(userPayload.id)
+      : rows[0]
 
-function createTokens(userPayload) {
-  const accessToken = jwt.sign(userPayload, process.env.ACCESS_JWT_SECRET, {
-    expiresIn: '10m',
+  res.status(200).send({
+    message: 'Logged In',
+    accessToken: access_token,
+    refreshToken: refresh_token,
   })
-  const refreshToken = jwt.sign(userPayload, process.env.REFRESH_JWT_SECRET)
-  return { accessToken, refreshToken }
 }
 
-async function storeTokens(userId, accessToken, refreshToken) {
-  await db.query(
-    'INSERT INTO user_tokens(user_id, access_token, refresh_token) VALUES ($1, $2, $3)',
-    [userId, accessToken, refreshToken]
+async function updateAccessToken(userId) {
+  const { rows } = await db.query(
+    `UPDATE user_tokens SET access_token = GEN_RANDOM_UUID(), expiresat = NOW() + $2 * INTERVAL '1 MINUTE' WHERE user_id = $1 RETURNING *`,
+    [userId, process.env.EXPIRES_AT]
   )
+  return rows[0]
 }
 
-async function validateAccessToken(accessToken, userPayload) {
-  try {
-    jwt.verify(accessToken, process.env.ACCESS_JWT_SECRET)
-    return accessToken
-  } catch (err) {
-    if (err instanceof jwt.TokenExpiredError) {
-      const newAccessToken = jwt.sign(
-        userPayload,
-        process.env.ACCESS_JWT_SECRET,
-        { expiresIn: '10m' }
-      )
-      await db.query(
-        `UPDATE FROM user_tokens SET access_token = $2 WHERE user_id = $1`,
-        [userPayload.id, newAccessToken]
-      )
-
-      return newAccessToken
-    }
-    throw err
-  }
+async function createAndStoreTokens(userId) {
+  const { rows } = await db.query(
+    `INSERT INTO user_tokens(user_id, access_token, refresh_token, expiresAt) VALUES ($1, gen_random_uuid(), gen_random_uuid(), NOW() + $2 * INTERVAL '1 MINUTE') RETURNING *`,
+    [userId, process.env.EXPIRES_AT]
+  )
+  return rows[0]
 }
 
 async function generateAccessToken(req, res, next) {
   const { refreshToken } = req.body
 
-  const { iat, exp, ...decodedRefreshToken } = jwt.verify(
+  const { rows, rowCount } = await db.query(
+    'SELECT * FROM user_tokens WHERE refresh_token = $1',
+    [refreshToken]
+  )
+
+  if (rowCount !== 1) {
+    throw new CustomError(401, 'Invalid Refresh Token')
+  }
+  const data = await updateAccessToken(rows[0].user_id)
+  res.status(200).send({
+    message: 'Access Token generated',
+    accessToken: data.access_token,
     refreshToken,
-    process.env.REFRESH_JWT_SECRET
-  )
-
-  const accessToken = jwt.sign(
-    decodedRefreshToken,
-    process.env.ACCESS_JWT_SECRET,
-    {
-      expiresIn: '10m',
-    }
-  )
-
-  await db.query(
-    `UPDATE user_tokens SET access_token = $2 WHERE user_id = $1 AND refresh_token = $3`,
-    [decodedRefreshToken.id, accessToken, refreshToken]
-  )
-  res.status(200).send({ accessToken })
+  })
 }
 
 export default authRouter
