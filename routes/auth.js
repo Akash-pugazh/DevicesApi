@@ -5,6 +5,7 @@ import { validateFields } from '../util/vaildator.js'
 import { ValidationConstraint } from '../util/vaildator.js'
 import tryCatchWrapper from '../util/tryCatchWrapper.js'
 import CustomError from '../util/CustomError.js'
+import { Config } from '../config.js'
 
 const authRouter = Router()
 
@@ -69,7 +70,7 @@ async function loginUser(req, res, next) {
 async function updateAccessToken(userId) {
   const { rows } = await db.query(
     `UPDATE user_tokens SET access_token = GEN_RANDOM_UUID(), expiresat = NOW() + $2 * INTERVAL '1 MINUTE' WHERE user_id = $1 RETURNING *`,
-    [userId, process.env.EXPIRES_AT]
+    [userId, Config.tokenExpiry]
   )
   return rows[0]
 }
@@ -77,7 +78,7 @@ async function updateAccessToken(userId) {
 async function createAndStoreTokens(userId) {
   const { rows } = await db.query(
     `INSERT INTO user_tokens(user_id, access_token, refresh_token, expiresAt) VALUES ($1, gen_random_uuid(), gen_random_uuid(), NOW() + $2 * INTERVAL '1 MINUTE') RETURNING *`,
-    [userId, process.env.EXPIRES_AT]
+    [userId, Config.tokenExpiry]
   )
   return rows[0]
 }
