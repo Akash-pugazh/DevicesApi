@@ -8,6 +8,8 @@ import cookieParser from 'cookie-parser'
 import { config } from 'dotenv'
 import configureRoutes, { RouterEndPoint } from './util/configureRoutes.js'
 import errorHandler from './middleware/errorHandler.js'
+import tryCatchWrapper from './util/tryCatchWrapper.js'
+import accessTokenCheck from './middleware/accessTokenCheck.js'
 
 config()
 
@@ -25,6 +27,7 @@ server.use(
     },
   })
 )
+server.use(tryCatchWrapper(accessTokenCheck))
 
 configureRoutes({
   server: server,

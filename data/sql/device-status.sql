@@ -6,5 +6,5 @@ CREATE TABLE device_status (
 
 INSERT INTO device_status(value)
 VALUES
-('IN OFFICE'),
-('OUT OF OFFICE');
+('GOOD'),
+('DEFECT');
