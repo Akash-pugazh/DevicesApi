@@ -1,3 +1,9 @@
+import { config } from 'dotenv'
+
+config()
+
 export const Config = {
-  tokenExpiry: process.env.EXPIRES_AT,
+  SESSION_SECRET: process.env.SESSION_SECRET,
+  PORT: process.env.PORT,
+  TOKEN_EXPIRY: process.env.EXPIRES_AT,
 }

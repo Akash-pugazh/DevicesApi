@@ -7,6 +7,7 @@ import CustomError from '../util/CustomError.js'
 const deviceRouter = Router()
 
 deviceRouter.route('/').get(tryCatchWrapper(getAllDevices))
+deviceRouter.route('/own').get(tryCatchWrapper(getOwnedDevices))
 deviceRouter.route('/instock').get(tryCatchWrapper(getInStockDevices))
 deviceRouter.route('/assign').post(tryCatchWrapper(assignDevice))
 deviceRouter.route('/release').post(tryCatchWrapper(returnDevice))
@@ -21,12 +22,31 @@ async function getAllDevices(req, res, next) {
   return res.status(200).send(data)
 }
 
+async function getOwnedDevices(req, res) {
+  const userId = req.userId
+  const { rows } = await db.query(
+    `
+    SELECT 
+      d.name device_name,
+      d.model device_model,
+      d.status device_status,
+      e.rented_at rented_at,
+      reason
+    FROM entries e 
+    JOIN devices d
+    ON d.id = e.device_id
+    WHERE returned_at IS NULL AND user_id = $1
+    `,
+    [userId]
+  )
+  res.status(200).send(rows)
+}
+
 async function getInStockDevices(req, res, next) {
   const { rows: data } = await db.query(`
     SELECT * FROM devices WHERE 
-    status <> (SELECT id FROM device_status WHERE value = 'DEFECT') AND 
-    id NOT IN (SELECT id FROM entries WHERE returned_at IS NOT NULL)`
-  )
+    status <> 'DEFECT' AND 
+    id NOT IN (SELECT device_id FROM entries WHERE returned_at IS NULL)`)
   res.status(200).send(data)
 }
 
@@ -39,14 +59,11 @@ async function assignDevice(req, res, next) {
   if (!(await isDeviceAvailable(deviceId))) {
     throw new CustomError(400, 'Device is taken')
   }
-  const { rows } = await db.query(
-    `SELECT id AS defaultReasonId FROM entry_reason WHERE value = 'PERSONAL USE'`
-  )
-  console.log(rows)
-  const { defaultreasonid } = rows[0]
+
+  const DEFAULT_ENTRY_REASON = 'WFH'
   await db.query(
     `INSERT INTO entries (user_id, device_id, reason) VALUES ($1, $2, $3)`,
-    [userId, deviceId, reason ?? defaultreasonid]
+    [userId, deviceId, reason ?? DEFAULT_ENTRY_REASON]
   )
 
   res.status(201).send('Device Rented')
@@ -69,13 +86,10 @@ async function returnDevice(req, res, next) {
   if (rowCount === 0) {
     throw new CustomError(401, 'Update failed')
   }
-  const { rows } = await db.query(
-    `SELECT id AS defaultDeviceStatusId FROM device_status WHERE value = 'GOOD'`
-  )
-  const { defaultdevicestatusid } = rows[0]
+  const DEFAULT_DEVICE_STATUS = 'GOOD'
   await db.query(`UPDATE devices SET status = $2 WHERE id = $1`, [
     deviceId,
-    deviceStatus ?? defaultdevicestatusid,
+    deviceStatus ?? DEFAULT_DEVICE_STATUS,
   ])
   res.status(200).send('Device Returned')
 }

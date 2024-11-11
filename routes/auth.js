@@ -70,7 +70,7 @@ async function loginUser(req, res, next) {
 async function updateAccessToken(userId) {
   const { rows } = await db.query(
     `UPDATE user_tokens SET access_token = GEN_RANDOM_UUID(), expiresat = NOW() + $2 * INTERVAL '1 MINUTE' WHERE user_id = $1 RETURNING *`,
-    [userId, Config.tokenExpiry]
+    [userId, Config.TOKEN_EXPIRY]
   )
   return rows[0]
 }
@@ -78,7 +78,7 @@ async function updateAccessToken(userId) {
 async function createAndStoreTokens(userId) {
   const { rows } = await db.query(
     `INSERT INTO user_tokens(user_id, access_token, refresh_token, expiresAt) VALUES ($1, gen_random_uuid(), gen_random_uuid(), NOW() + $2 * INTERVAL '1 MINUTE') RETURNING *`,
-    [userId, Config.tokenExpiry]
+    [userId, Config.TOKEN_EXPIRY]
   )
   return rows[0]
 }

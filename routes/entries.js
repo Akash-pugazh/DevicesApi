@@ -9,15 +9,13 @@ const baseQuery = `
         u.name user_name,
         d.id device_id,
         d.name device_name,
-        s.value device_status,
+        d.status,
         e.rented_at,
         e.returned_at,
-        er.value reason
+        e.reason
     FROM entries e 
     LEFT JOIN users u ON u.id = e.user_id 
-    LEFT JOIN devices d ON d.id = e.device_id
-    LEFT JOIN entry_reason er ON er.id = e.reason
-    LEFT JOIN device_status s ON s.id = d.status
+    LEFT JOIN devices d ON d.id = e.device_id    
     `
 
 const entriesRouter = Router()

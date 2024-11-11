@@ -5,13 +5,11 @@ import devicesRouter from './routes/devices.js'
 import entriesRouter from './routes/entries.js'
 import authRouter from './routes/auth.js'
 import cookieParser from 'cookie-parser'
-import { config } from 'dotenv'
 import configureRoutes, { RouterEndPoint } from './util/configureRoutes.js'
 import errorHandler from './middleware/errorHandler.js'
 import tryCatchWrapper from './util/tryCatchWrapper.js'
 import accessTokenCheck from './middleware/accessTokenCheck.js'
-
-config()
+import { Config } from './config.js'
 
 const server = express()
 
@@ -19,7 +17,7 @@ server.use(express.json())
 server.use(cookieParser())
 server.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: Config.SESSION_SECRET,
     saveUninitialized: false,
     resave: false,
     cookie: {
