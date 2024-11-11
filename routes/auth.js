@@ -45,6 +45,7 @@ async function loginUser(req, res, next) {
   if (dbResponse.rowCount !== 1) {
     throw new CustomError(404, 'User not found')
   }
+
   const { password: passwordFromDb, ...userPayload } = dbResponse.rows[0]
 
   const isValidPassword = await bcrypt.compare(password, passwordFromDb)
@@ -59,22 +60,52 @@ async function loginUser(req, res, next) {
     [userPayload.id]
   )
 
-  const firstTokenResponse = userTokenInDbResponse.rows[0]
-
-  if (!firstTokenResponse) {
-    accessToken = jwt.sign(userPayload, process.env.ACCESS_JWT_SECRET, {
-      expiresIn: '10m',
-    })
-    refreshToken = jwt.sign(userPayload, process.env.REFRESH_JWT_SECRET)
-    await db.query(
-      `INSERT INTO user_tokens(user_id, access_token, refresh_token) VALUES ($1, $2, $3)`,
-      [userPayload.id, accessToken, refreshToken]
-    )
+  if (userTokenInDbResponse.rowCount === 0) {
+    ({ accessToken, refreshToken } = createTokens(userPayload))
+    await storeTokens(userPayload.id, accessToken, refreshToken)
   } else {
-    accessToken = firstTokenResponse.access_token
-    refreshToken = firstTokenResponse.refresh_token
+    const tokens = userTokenInDbResponse.rows[0]
+    refreshToken = tokens.refresh_token
+    accessToken = await validateAccessToken(tokens.access_token, userPayload)
   }
   res.status(200).send({ message: 'Logged In', accessToken, refreshToken })
+}
+
+function createTokens(userPayload) {
+  const accessToken = jwt.sign(userPayload, process.env.ACCESS_JWT_SECRET, {
+    expiresIn: '10m',
+  })
+  const refreshToken = jwt.sign(userPayload, process.env.REFRESH_JWT_SECRET)
+  return { accessToken, refreshToken }
+}
+
+async function storeTokens(userId, accessToken, refreshToken) {
+  await db.query(
+    'INSERT INTO user_tokens(user_id, access_token, refresh_token) VALUES ($1, $2, $3)',
+    [userId, accessToken, refreshToken]
+  )
+}
+
+async function validateAccessToken(accessToken, userPayload) {
+  try {
+    jwt.verify(accessToken, process.env.ACCESS_JWT_SECRET)
+    return accessToken
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) {
+      const newAccessToken = jwt.sign(
+        userPayload,
+        process.env.ACCESS_JWT_SECRET,
+        { expiresIn: '10m' }
+      )
+      await db.query(
+        `UPDATE FROM user_tokens SET access_token = $2 WHERE user_id = $1`,
+        [userPayload.id, newAccessToken]
+      )
+
+      return newAccessToken
+    }
+    throw err
+  }
 }
 
 async function generateAccessToken(req, res, next) {
