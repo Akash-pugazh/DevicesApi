@@ -1,6 +1,5 @@
 import db from '../db/index.js'
 import { Router } from 'express'
-import accessTokenCheck from '../middleware/accessTokenCheck.js'
 import tryCatchWrapper from '../util/tryCatchWrapper.js'
 import CustomError from '../util/CustomError.js'
 
@@ -8,8 +7,8 @@ const deviceRouter = Router()
 
 deviceRouter.route('/').get(tryCatchWrapper(getAllDevices))
 deviceRouter.route('/own').get(tryCatchWrapper(getOwnedDevices))
-deviceRouter.route('/instock').get(tryCatchWrapper(getInStockDevices))
 deviceRouter.route('/assign').post(tryCatchWrapper(assignDevice))
+deviceRouter.route('/instock').get(tryCatchWrapper(getInStockDevices))
 deviceRouter.route('/release').post(tryCatchWrapper(returnDevice))
 
 async function getAllDevices(req, res, next) {
