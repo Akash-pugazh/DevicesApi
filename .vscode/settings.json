@@ -1,0 +1,5 @@
+{
+  "yaml.schemas": {
+    "openapi:v3": "file:///Users/aakash/Developer/GG/BE/devices_api/openapi.yml"
+  }
+}

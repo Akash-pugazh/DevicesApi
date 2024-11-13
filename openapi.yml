@@ -1,0 +1,281 @@
+openapi: 3.0.3
+
+info:
+  title: DEVICES API
+  description: 'This is docs for the devices and management api'
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+
+tags:
+  - name: AUTH
+    description: Auth related stuffs
+  - name: USERS
+    description: User related stuffs
+  - name: DEVICES
+    description: Device related stuffs
+  - name: ENTRIES
+    description: Entries related stuffs
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - AUTH
+      summary: Login endpoint
+      description: Hit this and get access and refresh tokens for Login
+      operationId: loginUser
+      requestBody:
+        $ref: '#/components/requestBodies/Login'
+
+      responses:
+        '200':
+          $ref: '#/components/responses/Login'
+
+  /auth/refresh:
+    post:
+      tags:
+        - AUTH
+      summary: Generate new access token
+      description: Provide the refresh token and generate new access token
+      operationId: generateAccessToken
+      requestBody:
+        description: Provide body with refresh token and get new access token
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+                  example: Random UUID
+      responses:
+        '201':
+          description: Token generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+                example:
+                  message: Access Token generated
+                  accessToken: RandomUUID
+                  refreshToken: RandomUUID
+
+  /users:
+    get:
+      tags:
+        - USERS
+      summary: Fetches all the users
+      description: Fetches all the users
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: To fetch users bases on their name
+      responses:
+        '200':
+          description: Fetched all users OK
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      $ref: '#/components/schemas/UserDetail'
+                  - $ref: '#/components/schemas/UserDetail'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /devices:
+    get:
+      security:
+        - BearerAuth: []
+      tags:
+        - DEVICES
+      summary: Fetches all devices
+      description: Must need the accesstoken then provide a array of devices in response
+      operationId: getDevices
+      parameters:
+        - name: q
+          description: Provides the device name that is of any character for fuzzy search
+          in: query
+          schema:
+            type: string
+            example: Poco
+      responses:
+        '200':
+          description: 'OK'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DeviceDetil'
+                example:
+                  - id: 1
+                    name: Poco
+                    model: X6
+                    status: GOOD
+                    created_at: 2024-11-11T12:04.32.432123
+                  - id: 2
+                    name: Poco
+                    model: X6
+                    status: GOOD
+                    created_at: 2024-11-11T12:04.32.432123
+
+  /devices/{id}:
+    parameters:
+      - $ref: '#/components/parameters/QueryIdParam'
+    get:
+      security:
+        - BearerAuth: []
+
+      tags:
+        - DEVICES
+      summary: Get particular device details based on id
+      operationId: getDeviceById
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: '#/components/schemas/DeviceDetil'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+  parameters:
+    QueryIdParam:
+      name: id
+      in: path
+      description: >
+        Provide **Particular ID**
+      required: true
+      schema:
+        type: integer
+        example: 1
+
+  requestBodies:
+    Login:
+      required: true
+      description: Auth Login request body contents
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginBody'
+          examples:
+            LoginRequestBody:
+              $ref: '#components/examples/LoginBody'
+
+  schemas:
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+          minLength: 10
+          maxLength: 50
+        password:
+          oneOf:
+            - type: string
+            - type: number
+      required:
+        - email
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+      required:
+        - message
+        - accessToken
+        - refreshToken
+
+    DeviceDetil:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        model:
+          type: string
+        status:
+          enum:
+            - GOOD
+            - DEFECT
+        createdAt:
+          type: string
+          format: date-time
+
+    UserDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+  responses:
+    Login:
+      description: Login Response 200 success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/LoginResponse'
+          examples:
+            LoginResponse:
+              $ref: '#components/examples/LoginResponse'
+
+    Unauthorized:
+      description: >
+        Throwed when no token is found i think so **Unauthorized**
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                default: 'Unauthorized'
+
+  examples:
+    LoginBody:
+      value:
+        email: aakashit13@gmail.com
+        password: password
+
+    LoginResponse:
+      value:
+        message: Login success
+        accessToken: RandomUUID
+        refreshToken: RandomUUID

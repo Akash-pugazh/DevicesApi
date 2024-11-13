@@ -13,6 +13,12 @@ export default new (class DeviceService {
     return res.status(200).send(data)
   }
 
+  async getDevice(req, res) {
+    let { id } = req.params
+    const data = await DeviceRepository.findOne({ id })
+    return res.status(200).send(data)
+  }
+
   async getOwnedDevices(req, res) {
     const userId = req.userId
     const data = await DeviceRepository.fetchOwnedDevices({ userId })

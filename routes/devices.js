@@ -5,6 +5,7 @@ import DeviceService from '../services/device-service.js'
 const deviceRouter = Router()
 
 deviceRouter.route('/').get(tryCatchWrapper(DeviceService.getAllDevices))
+deviceRouter.route('/:id').get(tryCatchWrapper(DeviceService.getDevice))
 deviceRouter.route('/own').get(tryCatchWrapper(DeviceService.getOwnedDevices))
 deviceRouter.get('/instock', tryCatchWrapper(DeviceService.getInStockDevices))
 deviceRouter.route('/assign').post(tryCatchWrapper(DeviceService.assignDevice))

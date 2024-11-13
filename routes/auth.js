@@ -33,7 +33,7 @@ authRouter
   .route('/refresh')
   .post(
     validateFields(RefreshValidationFields),
-    tryCatchWrapper(AuthService.generateAccessToken)
+    tryCatchWrapper(AuthService.generateAccessToken),
   )
 
 export default authRouter

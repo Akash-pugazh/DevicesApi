@@ -20,11 +20,8 @@ export default async function (req, res, next) {
   const tokenData = await usertokensRepository.findOne({
     access_token: accessToken,
   })
-  if (!tokenData) {
-    throw new Error('Invalid Access Token')
-  }
-  if (tokenData.expiresat.getTime() < Date.now()) {
-    throw new Error('Token Expired')
+  if (!tokenData || tokenData.expiresat.getTime() < Date.now()) {
+    throw new CustomError(401, 'Unauthorized')
   }
   req.userId = tokenData.user_id
   next()
