@@ -1,8 +1,12 @@
-import pg from 'pg'
+import pgPromise from 'pg-promise'
 
-export default new pg.Pool({
-  user: 'aakash',
-  host: 'localhost',
-  database: 'taskDb',
-  port: 5432,
+const pgpDbInstanceCreator = pgPromise({
+  pgFormatting: true,
+  capSQL: true,
 })
+
+const db = pgpDbInstanceCreator(
+  'postgres://aakash:password@localhost:5432/taskDb'
+)
+
+export default db

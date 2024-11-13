@@ -3,10 +3,10 @@ import DeviceRepository from '../repository/device-repository.js'
 import EntryRepository from '../repository/entry-repository.js'
 
 export default new (class DeviceService {
-  async getAllDevices(req, res, next) {
+  async getAllDevices(req, res) {
     let query = req.query.q
     const searchQuery = `%${query}%`
-    const { rows: data } = query
+    const data = query
       ? await DeviceRepository.fetchByNameOrModel({ searchQuery })
       : await DeviceRepository.fetchAllDevices()
 
@@ -15,22 +15,28 @@ export default new (class DeviceService {
 
   async getOwnedDevices(req, res) {
     const userId = req.userId
-    const { rows } = await DeviceRepository.fetchOwnedDevices({ userId })
-    res.status(200).send(rows)
-  }
-
-  async getInStockDevices(req, res, next) {
-    const { rows: data } = await DeviceRepository.fetchInStockDevices()
+    const data = await DeviceRepository.fetchOwnedDevices({ userId })
     res.status(200).send(data)
   }
 
-  async assignDevice(req, res, next) {
+  async getInStockDevices(req, res) {
+    const data = await DeviceRepository.fetchInStockDevices()
+    res.status(200).send(data)
+  }
+
+  async assignDevice(req, res) {
     const userId = req.userId
     const { deviceId, reason } = req.body
-    if (!(await DeviceService.isDeviceValid(deviceId))) {
+
+    const validDevice = await DeviceService.isDeviceValid(deviceId)
+    if (!validDevice) {
       throw new CustomError(404, 'Device not found')
     }
-    if (!(await DeviceService.isDeviceAvailable(deviceId))) {
+
+    const isDeviceAvailableToRent = await DeviceService.isDeviceAvailableToRent(
+      deviceId
+    )
+    if (!isDeviceAvailableToRent) {
       throw new CustomError(400, 'Device is taken')
     }
 
@@ -44,15 +50,14 @@ export default new (class DeviceService {
     res.status(201).send('Device Rented')
   }
 
-  async returnDevice(req, res, next) {
+  async returnDevice(req, res) {
     const userId = req.userId
     const { deviceId, deviceStatus } = req.body
-    const { rowCount: entryRowCount } =
-      await EntryRepository.fetchNotReturnedEntryByUserIdAndDeviceIdIs({
-        user_id: userId,
-        device_id: deviceId,
-      })
-    if (entryRowCount === 0) {
+    const isUserDevice = await DeviceService.isUserHoldingDevice(
+      userId,
+      deviceId
+    )
+    if (!isUserDevice) {
       throw new CustomError(400, 'Invalid Device Id')
     }
     await EntryRepository.updateEntryReturnedAt({
@@ -67,24 +72,21 @@ export default new (class DeviceService {
     res.status(200).send('Device Returned')
   }
 
-  static async isDeviceValid(deviceId) {
-    try {
-      const { rowCount } = await DeviceRepository.findDeviceById({
-        id: deviceId,
-      })
-      return rowCount === 1
-    } catch (err) {
-      throw err
-    }
+  static isUserHoldingDevice = async (user_id, device_id) => {
+    return await EntryRepository.fetchEntryByUserAndDeviceId({
+      user_id,
+      device_id,
+    })
   }
 
-  static async isDeviceAvailable(deviceId) {
-    try {
-      const { rowCount } =
-        await DeviceRepository.fetchDeviceByIdAndIsNotReturned({ id: deviceId })
-      return rowCount === 0
-    } catch (err) {
-      throw err
-    }
+  static isDeviceValid = async deviceId =>
+    await DeviceRepository.findDeviceById({
+      id: deviceId,
+    })
+
+  static isDeviceAvailableToRent = async deviceId => {
+    return await DeviceRepository.isDeviceAvailableToRent({
+      id: deviceId,
+    })
   }
 })()

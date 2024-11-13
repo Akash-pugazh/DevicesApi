@@ -1,4 +1,5 @@
 import db from '../db/index.js'
+import usertokensRepository from '../repository/usertokens-repository.js'
 import CustomError from '../util/CustomError.js'
 
 export default async function (req, res, next) {
@@ -16,15 +17,12 @@ export default async function (req, res, next) {
 
   const accessToken = authHeader.split(' ')[1]
   if (!accessToken) throw new CustomError(401, 'Access token not found')
-
-  const { rowCount, rows } = await db.query(
-    `SELECT * FROM user_tokens WHERE access_token = $1`,
-    [accessToken]
-  )
-  if (rowCount !== 1) {
+  const tokenData = await usertokensRepository.findOne({
+    access_token: accessToken,
+  })
+  if (!tokenData) {
     throw new Error('Invalid Access Token')
   }
-  const tokenData = rows[0]
   if (tokenData.expiresat.getTime() < Date.now()) {
     throw new Error('Token Expired')
   }

@@ -1,3 +1,4 @@
+import db from '../db/index.js'
 import BaseRepository from './base-repository.js'
 
 export default new (class DeviceRepository extends BaseRepository {
@@ -47,10 +48,10 @@ export default new (class DeviceRepository extends BaseRepository {
       query += 'WHERE d.rented_at BETWEEN $1 AND $2 '
       values.push(startDate, endDate)
     } else if (startDate) {
-      query += 'WHERE d.rented_at >= $1 '
+      query += 'WHERE e.rented_at >= $1 '
       values.push(startDate)
     } else if (endDate) {
-      query += 'WHERE d.rented_at <= $1 '
+      query += 'WHERE e.rented_at <= $1 '
       values.push(endDate)
     }
     query += 'ORDER BY rented_at DESC'
@@ -61,8 +62,8 @@ export default new (class DeviceRepository extends BaseRepository {
     return await this.insertOne({ user_id, device_id, reason })
   }
 
-  async fetchNotReturnedEntryByUserIdAndDeviceIdIs({ user_id, device_id }) {
-    return await this.customQuery(
+  async fetchEntryByUserAndDeviceId({ user_id, device_id }) {
+    return await db.oneOrNone(
       `SELECT * FROM entries WHERE user_id = $1 AND device_id = $2 AND returned_at IS NULL`,
       [user_id, device_id]
     )

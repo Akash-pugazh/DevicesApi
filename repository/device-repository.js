@@ -1,3 +1,4 @@
+import db from '../db/index.js'
 import BaseRepository from './base-repository.js'
 
 export default new (class DeviceRepository extends BaseRepository {
@@ -44,14 +45,17 @@ export default new (class DeviceRepository extends BaseRepository {
   }
 
   async findDeviceById({ id }) {
-    return await this.find({ id })
+    return await this.findOne({ id })
   }
 
-  async fetchDeviceByIdAndIsNotReturned({ id }) {
-    return await this.customQuery(
-      `SELECT * FROM entries WHERE device_id = $1 AND returned_at IS NULL`,
-      [id]
-    )
+  async isDeviceAvailableToRent({ id }) {
+    return db
+      .none(
+        `SELECT * FROM entries WHERE device_id = $1 AND returned_at IS NULL`,
+        [id]
+      )
+      .then(data => true)
+      .catch(err => false)
   }
 
   async updateDeviceStatus({ id, status }) {

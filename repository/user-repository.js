@@ -7,11 +7,13 @@ export default new (class UserRepository extends BaseRepository {
   }
 
   async findByEmail({ email }) {
-    return await this.find({ email }, true)
+    return await db.oneOrNone(`SELECT * FROM ${this.table} WHERE email = $1`, [
+      email,
+    ])
   }
 
   async findByName({ name }) {
-    return await db.query(`SELECT * FROM users WHERE name ILIKE $1`, [
+    return await this.customQuery(`SELECT * FROM users WHERE name ILIKE $1`, [
       `%${name}%`,
     ])
   }
