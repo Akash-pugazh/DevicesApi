@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Router } from 'express'
 import usersRouter from './routes/users.js'
 import devicesRouter from './routes/devices.js'
 import entriesRouter from './routes/entries.js'
@@ -6,8 +6,12 @@ import authRouter from './routes/auth.js'
 import configureRoutes, { RouterEndPoint } from './util/configureRoutes.js'
 import errorHandler from './middleware/errorHandler.js'
 import setGlobalMiddlewares from './middleware/index.js'
+import swaggerUi from 'swagger-ui-express'
+import swaggerFile from './docs/openapi (1).json' with {type: 'json'}
 
 const server = express()
+
+
 
 setGlobalMiddlewares({ server })
 

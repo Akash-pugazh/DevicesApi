@@ -1,0 +1,999 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "DEVICES API",
+    "description": "This is docs for the devices and management api",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "tags": [
+    {
+      "name": "AUTH",
+      "description": "Auth related stuffs"
+    },
+    {
+      "name": "USERS",
+      "description": "User related stuffs"
+    },
+    {
+      "name": "DEVICES",
+      "description": "Device related stuffs"
+    },
+    {
+      "name": "ENTRIES",
+      "description": "Entries related stuffs"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "AUTH"
+        ],
+        "summary": "Login endpoint",
+        "description": "Hit this and get access and refresh tokens for Login",
+        "operationId": "loginUser",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Login"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Login"
+          },
+          "400": {
+            "description": "Bad request on password mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "InvalidPassowordErr": {
+                    "value": {
+                      "message": "Invalid Password"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "NotFoundErr": {
+                    "value": {
+                      "message": "User Not Found"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": [
+          "AUTH"
+        ],
+        "summary": "Generate new access token",
+        "description": "Provide the refresh token and generate new access token",
+        "operationId": "generateAccessToken",
+        "requestBody": {
+          "description": "Provide body with refresh token and get new access token",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refreshToken": {
+                    "type": "string",
+                    "example": "Random UUID"
+                  }
+                },
+                "required": [
+                  "refreshToken"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Token generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "accessToken": {
+                      "type": "string"
+                    },
+                    "refreshToken": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "Access Token generated",
+                    "accessToken": "RandomUUID",
+                    "refreshToken": "RandomUUID"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Throws when token is not found in db",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                },
+                "examples": {
+                  "TokenNotFoundErr": {
+                    "value": {
+                      "message": "Invalid Refresh Token"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": [
+          "USERS"
+        ],
+        "summary": "Fetches all the users",
+        "description": "Fetches all the users",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "To fetch users bases on their name",
+            "example": "poco"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fetched all users OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserDetail"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/users/create": {
+      "post": {
+        "tags": [
+          "USERS"
+        ],
+        "description": "This will create a new user in db with email, password and name",
+        "summary": "Create a new user",
+        "operationId": "createUser",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "minProperties": 3,
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 50,
+                    "pattern": "^[a-zA-Z\\s]*$"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"
+                  },
+                  "password": {
+                    "type": "string",
+                    "pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$",
+                    "minLength": 8
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "password"
+                ],
+                "example": {
+                  "name": "Pugazh",
+                  "password": "Password",
+                  "email": "pugazh@gmail.com"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success creating a user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDetail"
+                },
+                "examples": {
+                  "User1": {
+                    "$ref": "#/components/examples/CreateUserResponseExample"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/devices": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "DEVICES"
+        ],
+        "summary": "Fetches all devices",
+        "description": "Must need the accesstoken then provide a array of devices in response",
+        "operationId": "getDevices",
+        "parameters": [
+          {
+            "name": "q",
+            "description": "Provides the device name that is of any character for fuzzy search",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "Poco"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceDetail"
+                  },
+                  "example": [
+                    {
+                      "id": 1,
+                      "name": "Poco",
+                      "model": "X6",
+                      "status": "GOOD",
+                      "created_at": "2024-11-11T12:04.32.432123"
+                    },
+                    {
+                      "id": 2,
+                      "name": "Poco",
+                      "model": "X6",
+                      "status": "GOOD",
+                      "created_at": "2024-11-11T12:04.32.432123"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/QueryIdParam"
+        }
+      ],
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "DEVICES"
+        ],
+        "summary": "Get particular device details based on id",
+        "operationId": "getDeviceById",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/owned": {
+      "get": {
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "DEVICES"
+        ],
+        "summary": "Fetches all devices the logged in user owns",
+        "description": "Must need the accesstoken then provide a array of devices in response",
+        "operationId": "getDevicesOwned",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceDetail"
+                  }
+                },
+                "examples": {
+                  "TestEg": {
+                    "$ref": "#/components/examples/DeviceDetailsExample"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/instock": {
+      "get": {
+        "description": "This will provide array of devices that are not currently owned by the user and is not DEFECT",
+        "summary": "Provides list of devices instock",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "DEVICES"
+        ],
+        "operationId": "getInstockDevices",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DevicesDetailsList"
+          }
+        }
+      }
+    },
+    "/devices/assign": {
+      "post": {
+        "description": "This will check for device is present in db, then is it available to rent not assigned to other user and then will assign to the user based on accesstoken",
+        "summary": "Assign a device",
+        "operationId": "assignDevice",
+        "tags": [
+          "DEVICES"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "deviceId": {
+                    "type": "integer"
+                  },
+                  "reason": {
+                    "$ref": "#/components/schemas/ReasonEnum"
+                  }
+                },
+                "required": [
+                  "deviceId"
+                ]
+              },
+              "example": {
+                "deviceId": 1,
+                "reason": "WFH"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Device rented successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Device Rented"
+              }
+            }
+          },
+          "400": {
+            "description": "If device is currently owned by others",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                },
+                "example": {
+                  "message": "Device is taken"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid Device Id will make device not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                },
+                "example": {
+                  "message": "Device not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/release": {
+      "post": {
+        "description": "This will check for device is currently owned by user and then return it",
+        "summary": "Return a device to db",
+        "tags": [
+          "DEVICES"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "deviceId": {
+                    "type": "integer"
+                  },
+                  "deviceStatus": {
+                    "type": "string",
+                    "enum": [
+                      "GOOD",
+                      "DEFECT"
+                    ],
+                    "default": "GOOD"
+                  }
+                },
+                "required": [
+                  "deviceId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "device will be returned to db",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "Device Returned"
+              }
+            }
+          },
+          "400": {
+            "description": "Thrown if user does not have that device",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorSchema"
+                },
+                "example": {
+                  "message": "Invalid device Id"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/entries": {
+      "get": {
+        "description": "This will fetch all entries and also based on query",
+        "summary": "Get entries list",
+        "tags": [
+          "ENTRIES"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "operationId": "getEntriesOrByUserOrDeviceNames",
+        "parameters": [
+          {
+            "name": "user",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "must be username to filter through",
+            "required": false,
+            "example": "aak"
+          },
+          {
+            "name": "device",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "description": "Must be device name to filter them",
+            "example": "poco"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fetches array of obj response with mixed fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntriesDetailOverview"
+                },
+                "examples": {
+                  "EntriesDetailsList": {
+                    "$ref": "#/components/examples/EntriesDetailList"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/entries/date": {
+      "get": {
+        "description": "This will fetch all entries and based on start and end date in query",
+        "summary": "Get entries list by date",
+        "tags": [
+          "ENTRIES"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "operationId": "getEntriesByStartAndEndDate",
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date_time",
+              "example": "2024-11-01T06:36:45.710Z"
+            },
+            "description": "must be date string to filter through",
+            "required": false
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date_time",
+              "example": "2024-11-01T06:36:45.710Z"
+            },
+            "required": false,
+            "description": "Must be date string to filter them"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fetches array of obj response with mixed fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntriesDetailOverview"
+                },
+                "examples": {
+                  "EntriesDetailsList": {
+                    "$ref": "#/components/examples/EntriesDetailList"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
+    "parameters": {
+      "QueryIdParam": {
+        "name": "id",
+        "in": "path",
+        "description": "Provide **Particular ID**\n",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "example": 1
+        }
+      }
+    },
+    "requestBodies": {
+      "Login": {
+        "required": true,
+        "description": "Auth Login request body contents",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/LoginBody"
+            },
+            "examples": {
+              "LoginRequestBody": {
+                "$ref": "#/components/examples/LoginBody"
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ErrorSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "EntriesDetailOverview": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "user_id": {
+              "type": "integer"
+            },
+            "user_name": {
+              "type": "string"
+            },
+            "device_id": {
+              "type": "integer"
+            },
+            "device_name": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "GOOD",
+                "DEFECT"
+              ]
+            },
+            "rented_at": {
+              "type": "string",
+              "format": "date_time"
+            },
+            "returned_at": {
+              "type": "string",
+              "format": "date_time"
+            },
+            "reason": {
+              "$ref": "#/components/schemas/ReasonEnum"
+            }
+          }
+        }
+      },
+      "ReasonEnum": {
+        "type": "string",
+        "enum": [
+          "PERSONAL USE",
+          "AT SERVICE CENTER",
+          "WFH",
+          "RETURNED",
+          "TESTING"
+        ],
+        "default": "PERSONAL USE"
+      },
+      "LoginBody": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$"
+          },
+          "password": {
+            "type": "string",
+            "pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "accessToken",
+          "refreshToken"
+        ]
+      },
+      "DeviceDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "GOOD",
+              "DEFECT"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UserDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "responses": {
+      "Login": {
+        "description": "Login Response 200 success",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/LoginResponse"
+            },
+            "examples": {
+              "LoginResponse": {
+                "$ref": "#/components/examples/LoginResponse"
+              }
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Throwed when no token is found i think so **Unauthorized**\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "default": "Unauthorized"
+                }
+              }
+            }
+          }
+        }
+      },
+      "DevicesDetailsList": {
+        "description": "Device list based on the endpoint",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/DeviceDetail"
+              }
+            },
+            "examples": {
+              "DevicesExample": {
+                "$ref": "#/components/examples/DeviceDetailsExample"
+              }
+            }
+          }
+        }
+      }
+    },
+    "examples": {
+      "LoginBody": {
+        "value": {
+          "email": "aakashit13@gmail.com",
+          "password": "password"
+        }
+      },
+      "LoginResponse": {
+        "value": {
+          "message": "Login success",
+          "accessToken": "RandomUUID",
+          "refreshToken": "RandomUUID"
+        }
+      },
+      "CreateUserResponseExample": {
+        "value": {
+          "id": 1,
+          "name": "Aakash",
+          "password": "RANDOM UUID",
+          "email": "aakash@gmail.com",
+          "created_at": "2024-11-11T12:04.32.432123"
+        }
+      },
+      "DeviceDetailExample": {
+        "value": {
+          "id": 2,
+          "name": "Poco",
+          "model": "X6",
+          "status": "GOOD",
+          "created_at": "2024-11-11T12:04.32.432123"
+        }
+      },
+      "DeviceDetailsExample": {
+        "value": [
+          {
+            "id": 1,
+            "name": "Poco",
+            "model": "X6",
+            "status": "GOOD",
+            "created_at": "2024-11-11T12:04.32.432123"
+          },
+          {
+            "id": 2,
+            "name": "Poco",
+            "model": "X6",
+            "status": "GOOD",
+            "created_at": "2024-11-11T12:04.32.432123"
+          }
+        ]
+      },
+      "EntriesDetailList": {
+        "value": [
+          {
+            "id": 1,
+            "user_id": 1,
+            "user_name": "Aakash",
+            "device_id": 1,
+            "device_name": "Poco",
+            "status": "GOOD",
+            "rented_at": "2024-11-12T11:56:51.621Z",
+            "returned_at": "2024-11-12T11:56:51.621Z",
+            "reason": "WFH"
+          },
+          {
+            "id": 2,
+            "user_id": 1,
+            "user_name": "Aakash",
+            "device_id": 2,
+            "device_name": "Iphone",
+            "status": "GOOD",
+            "rented_at": "2024-11-12T11:56:51.621Z",
+            "returned_at": "2024-11-12T11:56:51.621Z",
+            "reason": "PERSONAL USE"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -163,7 +163,6 @@ paths:
                   pattern: ^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$
                 password:
                   type: string
-                  pattern: ^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$
                   minLength: 8
               required:
                 - name
@@ -328,10 +327,10 @@ paths:
               schema:
                 type: string
               example: Device Rented
-  
+
   /devices/release:
     post:
-      description: This will check for device is currently owned by user and then return it 
+      description: This will check for device is currently owned by user and then return it
       summary: Return a device to db
       tags:
         - DEVICES
@@ -343,8 +342,8 @@ paths:
             schema:
               type: object
               properties:
-                deviceId: 
-                 type: integer
+                deviceId:
+                  type: integer
                 deviceStatus:
                   type: string
                   enum:
@@ -361,7 +360,7 @@ paths:
               schema:
                 type: string
               example: Device Returned
-      
+
         '400':
           description: Thrown if user does not have that device
           content:
@@ -372,8 +371,7 @@ paths:
                 message: Invalid device Id
         '401':
           $ref: '#/components/responses/Unauthorized'
-          
-          
+
   /entries:
     get:
       description: This will fetch all entries and also based on query
@@ -386,7 +384,7 @@ paths:
       parameters:
         - name: user
           in: query
-          schema: 
+          schema:
             type: string
           description: must be username to filter through
           required: false
@@ -408,8 +406,7 @@ paths:
               examples:
                 EntriesDetailsList:
                   $ref: '#/components/examples/EntriesDetailList'
-                    
-                    
+
   /entries/date:
     get:
       description: This will fetch all entries and based on start and end date in query
@@ -422,9 +419,8 @@ paths:
       parameters:
         - name: startDate
           in: query
-          schema: 
+          schema:
             type: string
-            format: date_time
             example: 2024-11-01T06:36:45.710Z
           description: must be date string to filter through
           required: false
@@ -432,14 +428,13 @@ paths:
           in: query
           schema:
             type: string
-            format: date_time
             example: 2024-11-01T06:36:45.710Z
           required: false
           description: Must be date string to filter them
       responses:
         '401':
           $ref: '#/components/responses/Unauthorized'
-      
+
         '200':
           description: Fetches array of obj response with mixed fields
           content:
@@ -448,10 +443,8 @@ paths:
                 $ref: '#/components/schemas/EntriesDetailOverview'
               examples:
                 EntriesDetailsList:
-                  $ref: '#/components/examples/EntriesDetailList'              
-          
-          
-  
+                  $ref: '#/components/examples/EntriesDetailList'
+
 components:
   securitySchemes:
     BearerAuth:
@@ -481,7 +474,6 @@ components:
             LoginRequestBody:
               $ref: '#/components/examples/LoginBody'
 
-
   schemas:
     ErrorSchema:
       type: object
@@ -494,7 +486,7 @@ components:
       items:
         type: object
         properties:
-          id: 
+          id:
             type: integer
           user_id:
             type: integer
@@ -509,12 +501,10 @@ components:
             enum:
               - GOOD
               - DEFECT
-          rented_at: 
+          rented_at:
             type: string
-            format: date_time
           returned_at:
             type: string
-            format: date_time
           reason:
             $ref: '#/components/schemas/ReasonEnum'
 
@@ -537,8 +527,8 @@ components:
           pattern: ^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$
         password:
           type: string
-          pattern: ^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$
           minLength: 8
+          maxLength: 20
       required:
         - email
         - password
@@ -651,7 +641,7 @@ components:
         model: X6
         status: GOOD
         created_at: 2024-11-11T12:04.32.432123
-  
+
     DeviceDetailsExample:
       value:
         - id: 1
@@ -664,11 +654,10 @@ components:
           model: X6
           status: GOOD
           created_at: 2024-11-11T12:04.32.432123
-          
-    
+
     EntriesDetailList:
       value:
-        - id : 1
+        - id: 1
           user_id: 1
           user_name: Aakash
           device_id: 1
@@ -677,7 +666,7 @@ components:
           rented_at: 2024-11-12T11:56:51.621Z
           returned_at: 2024-11-12T11:56:51.621Z
           reason: WFH
-        - id : 2
+        - id: 2
           user_id: 1
           user_name: Aakash
           device_id: 2

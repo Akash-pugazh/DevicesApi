@@ -3,6 +3,7 @@ import { validateFields } from '../util/vaildator.js'
 import { ValidationConstraint } from '../util/vaildator.js'
 import tryCatchWrapper from '../util/tryCatchWrapper.js'
 import AuthService from '../services/auth-service.js'
+import swaggerValidation from 'openapi-validator-middleware'
 
 const authRouter = Router()
 
@@ -24,16 +25,12 @@ export const RefreshValidationFields = {
 
 authRouter
   .route('/login')
-  .post(
-    validateFields(LoginValidationFields),
-    tryCatchWrapper(AuthService.loginUser)
-  )
-
+  .post(swaggerValidation.validate, tryCatchWrapper(AuthService.loginUser))
 authRouter
   .route('/refresh')
   .post(
-    validateFields(RefreshValidationFields),
-    tryCatchWrapper(AuthService.generateAccessToken),
+    swaggerValidation.validate,
+    tryCatchWrapper(AuthService.generateAccessToken)
   )
 
 export default authRouter
