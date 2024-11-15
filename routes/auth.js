@@ -5,6 +5,7 @@ import AuthService from '../services/auth-service.js';
 import openApiValidator from 'openapi-validator-middleware';
 
 const authRouter = Router();
+const validatorFn = openApiValidator.validate;
 
 export const LoginValidationFields = {
   password: new ValidationConstraint({
@@ -24,7 +25,7 @@ export const RefreshValidationFields = {
   })
 };
 
-authRouter.route('/login').post(openApiValidator.validate, tryCatchWrapper(AuthService.loginUser));
-authRouter.route('/refresh').post(openApiValidator.validate, tryCatchWrapper(AuthService.generateAccessToken));
+authRouter.route('/login').post(validatorFn, tryCatchWrapper(AuthService.loginUser));
+authRouter.route('/refresh').post(validatorFn, tryCatchWrapper(AuthService.generateAccessToken));
 
 export default authRouter;

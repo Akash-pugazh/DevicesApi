@@ -353,6 +353,75 @@
             }
           }
         }
+      },
+      "post": {
+        "description": "Provide name, model and optional status GOOD OR DEFECT in body to create a device only admin can do this",
+        "summary": "Create a device to db",
+        "tags": ["DEVICES"],
+        "operationId": "insertDevice",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "DeviceBodyToInsert": {
+                  "value": {
+                    "name": "Poco",
+                    "model": "X6 Pro",
+                    "status": "GOOD"
+                  }
+                }
+              },
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "minProperties": 2,
+                "maxProperties": 3,
+                "required": ["name", "model"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 50
+                  },
+                  "model": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 50
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["GOOD", "DEFECT"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "201": {
+            "description": "Device inserted in db successfully",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "DeviceCreatedExRes": {
+                    "$ref": "#/components/examples/DeviceDetailExample"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceDetail"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/devices/{id}": {
@@ -639,7 +708,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "format": "date_time",
+              "format": "date-time",
               "example": "2024-11-01T06:36:45.710Z"
             },
             "description": "must be date string to filter through",
@@ -650,7 +719,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "format": "date_time",
+              "format": "date-time",
               "example": "2024-11-01T06:36:45.710Z"
             },
             "required": false,
@@ -752,11 +821,11 @@
             },
             "rented_at": {
               "type": "string",
-              "format": "date_time"
+              "format": "date-time"
             },
             "returned_at": {
               "type": "string",
-              "format": "date_time"
+              "format": "date-time"
             },
             "reason": {
               "$ref": "#/components/schemas/ReasonEnum"

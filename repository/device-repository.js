@@ -10,6 +10,10 @@ export default new (class DeviceRepository extends BaseRepository {
     return await this.getAll();
   }
 
+  async insertDevice({ name, model, status }) {
+    return await this.insertOne({ name, model, status });
+  }
+
   async fetchByNameOrModel({ searchQuery }) {
     return await this.find({ name: searchQuery, model: searchQuery }, false, true);
   }

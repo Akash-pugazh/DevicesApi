@@ -19,6 +19,12 @@ export default new (class DeviceService {
     return res.status(200).send(data);
   }
 
+  async createDevice(req, res) {
+    const { name, model, status } = req.body;
+    const deviceData = await DeviceRepository.insertDevice({ name, model, status: status ?? 'GOOD' });
+    return res.status(201).send(deviceData);
+  }
+
   async getOwnedDevices(req, res) {
     const userId = req.userId;
     const data = await DeviceRepository.fetchOwnedDevices({ userId });

@@ -6,6 +6,7 @@ import UserService from '../services/user-service.js';
 import openApiValidator from 'openapi-validator-middleware';
 
 const userRouter = Router();
+const validatorFn = openApiValidator.validate;
 
 const UserCreateValidationFields = Object.assign(
   {
@@ -17,17 +18,12 @@ const UserCreateValidationFields = Object.assign(
   LoginValidationFields
 );
 
-userRouter.route('/').get(openApiValidator.validate, tryCatchWrapper(UserService.getUsers)).post(
-  openApiValidator.validate,
-  tryCatchWrapper(UserService.checkIsAdminMiddeware),
-  tryCatchWrapper(UserService.createUser)
-);
+userRouter
+  .route('/')
+  .get(validatorFn, tryCatchWrapper(UserService.getUsers))
+  .post(validatorFn, tryCatchWrapper(UserService.checkIsAdminMiddeware), tryCatchWrapper(UserService.createUser));
 userRouter
   .route('/:id')
-  .delete(
-    openApiValidator.validate,
-    tryCatchWrapper(UserService.checkIsAdminMiddeware),
-    tryCatchWrapper(UserService.deleteUser)
-  );
+  .delete(validatorFn, tryCatchWrapper(UserService.checkIsAdminMiddeware), tryCatchWrapper(UserService.deleteUser));
 
 export default userRouter;
