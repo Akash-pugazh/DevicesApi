@@ -25,6 +25,10 @@ export default new (class UserService {
 
   async deleteUser(req, res) {
     const id = req.params.id;
+    const isUserValid = await UserRepository.findOne({ id });
+    if (!isUserValid) {
+      throw new CustomError({ statusCode: 400, errorMessage: 'Invalid User Id' });
+    }
     await UserRepository.deleteById({ id });
     res.status(200).send('User Deleted');
   }
