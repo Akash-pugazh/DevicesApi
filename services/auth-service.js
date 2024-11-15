@@ -43,7 +43,7 @@ export default new (class AuthService {
         errorMessage: 'Invalid Refresh Tokens'
       });
     }
-    const data = await AuthService.#updateAccessToken(dbRes.user_id);
+    const data = await AuthService.#updateAccessToken(refreshToken);
     res.status(200).send({
       message: 'Access Token generated',
       accessToken: data.access_token,
@@ -57,9 +57,9 @@ export default new (class AuthService {
     });
   }
 
-  static async #updateAccessToken(userId) {
+  static async #updateAccessToken(refreshToken) {
     return await UserTokensRepository.updateAccessToken({
-      user_id: userId
+      refresh_token: refreshToken
     });
   }
 })();

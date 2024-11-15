@@ -17,10 +17,10 @@ export default new (class UserTokensRepository extends BaseRepository {
     );
   }
 
-  async updateAccessToken({ user_id }) {
+  async updateAccessToken({ refresh_token }) {
     return await this.getOneOrNull(
-      `UPDATE user_tokens SET access_token = GEN_RANDOM_UUID(), expiresat = NOW() + $2 * INTERVAL '1 MINUTE' WHERE user_id = $1 RETURNING *`,
-      [user_id, Config.TOKEN_EXPIRY]
+      `UPDATE user_tokens SET access_token = GEN_RANDOM_UUID(), expiresat = NOW() + $2 * INTERVAL '1 MINUTE' WHERE refresh_token = $1 RETURNING *`,
+      [refresh_token, Config.TOKEN_EXPIRY]
     );
   }
 })('user_tokens');
