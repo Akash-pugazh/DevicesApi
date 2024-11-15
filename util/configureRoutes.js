@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { configureDocRoute } from '../docs/index.js'
 const router = Router()
 
 export class RouterEndPoint {
@@ -9,6 +10,9 @@ export class RouterEndPoint {
 }
 
 export default function configureRoutes({ server, routers }) {
+  // Doc route
+  configureDocRoute(server)
+  // Other routes
   routers.forEach(ep => {
     server.use(ep.route, ep.router)
   })

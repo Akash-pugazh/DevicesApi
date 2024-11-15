@@ -13,15 +13,8 @@ export default new (class AuthService {
     const isValidPassword = await bcrypt.compare(password, passwordFromDb)
     if (!isValidPassword) throw new CustomError(400, 'Invalid Password')
 
-    const dbRes = await UserTokensRepository.findByUserId({
-      user_id: userPayload.id,
-    })
-
-    const { access_token, refresh_token } = !dbRes
-      ? await AuthService.#createAndStoreTokens(userPayload.id)
-      : dbRes.expiresat.getTime() < new Date().getTime()
-      ? await AuthService.#updateAccessToken(userPayload.id)
-      : dbRes
+    const { access_token, refresh_token } =
+      await AuthService.#createAndStoreTokens(userPayload.id)
 
     res.status(200).send({
       message: 'Logged In',

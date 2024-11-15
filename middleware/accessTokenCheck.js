@@ -1,14 +1,12 @@
-import db from '../db/index.js'
 import usertokensRepository from '../repository/usertokens-repository.js'
 import CustomError from '../util/CustomError.js'
 
 export default async function (req, res, next) {
-  if (
-    req.originalUrl
-      .split('/')
-      .filter(el => el.length > 1)
-      .includes('auth')
-  ) {
+  const canSkipRoute = req.originalUrl
+    .split('/')
+    .filter(el => el.length > 1)
+    .some(route => route === 'docs' || route === 'auth')
+  if (canSkipRoute) {
     return next()
   }
 
