@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import server from '../index.js'
-import { Config } from '../config.js'
+import server from '../index.js';
+import { Config } from '../config.js';
 
-const PORT = Config.PORT
+const PORT = Config.PORT;
 
 server.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`)
-})
+  console.log(`Server running on ${PORT}`);
+});

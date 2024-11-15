@@ -1,21 +1,17 @@
-import db from '../db/index.js'
-import BaseRepository from './base-repository.js'
+import db from '../db/index.js';
+import BaseRepository from './base-repository.js';
 
 export default new (class DeviceRepository extends BaseRepository {
   constructor(tablename) {
-    super(tablename)
+    super(tablename);
   }
 
   async fetchAllDevices() {
-    return await this.getAll()
+    return await this.getAll();
   }
 
   async fetchByNameOrModel({ searchQuery }) {
-    return await this.find(
-      { name: searchQuery, model: searchQuery },
-      false,
-      true
-    )
+    return await this.find({ name: searchQuery, model: searchQuery }, false, true);
   }
 
   async fetchOwnedDevices({ userId }) {
@@ -30,9 +26,9 @@ export default new (class DeviceRepository extends BaseRepository {
       JOIN devices d
       ON d.id = e.device_id
       WHERE returned_at IS NULL AND user_id = $1
-    `
-    const values = [userId]
-    return await this.customQuery(query, values)
+    `;
+    const values = [userId];
+    return await this.customQuery(query, values);
   }
 
   async fetchInStockDevices() {
@@ -40,25 +36,22 @@ export default new (class DeviceRepository extends BaseRepository {
       SELECT * FROM devices WHERE 
       status <> 'DEFECT' AND 
       id NOT IN (SELECT device_id FROM entries WHERE returned_at IS NULL)
-    `
-    return await this.customQuery(query)
+    `;
+    return await this.customQuery(query);
   }
 
   async findDeviceById({ id }) {
-    return await this.findOne({ id })
+    return await this.findOne({ id });
   }
 
   async isDeviceAvailableToRent({ id }) {
     return db
-      .none(
-        `SELECT * FROM entries WHERE device_id = $1 AND returned_at IS NULL`,
-        [id]
-      )
+      .none(`SELECT * FROM entries WHERE device_id = $1 AND returned_at IS NULL`, [id])
       .then(data => true)
-      .catch(err => false)
+      .catch(err => false);
   }
 
   async updateDeviceStatus({ id, status }) {
-    return await this.update({ status }, { id })
+    return await this.update({ status }, { id });
   }
-})('devices')
+})('devices');

@@ -1,11 +1,10 @@
-import { config } from 'dotenv'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { config } from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-config()
+config();
 
-const ROOT_DIR = path.dirname(fileURLToPath(import.meta.url))
-
+const ROOT_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 export const Config = Object.freeze({
   ROOT_DIR: ROOT_DIR,
@@ -13,5 +12,5 @@ export const Config = Object.freeze({
   SESSION_SECRET: process.env.SESSION_SECRET,
   PORT: process.env.PORT,
   TOKEN_EXPIRY: process.env.EXPIRES_AT,
-  SALT_ROUNDS: +process.env.SALT_ROUNDS,
-})
+  SALT_ROUNDS: +process.env.SALT_ROUNDS
+});

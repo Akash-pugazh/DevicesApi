@@ -1,12 +1,10 @@
-import pgPromise from 'pg-promise'
+import pgPromise from 'pg-promise';
 
 const pgpDbInstanceCreator = pgPromise({
   pgFormatting: true,
-  capSQL: true,
-})
+  capSQL: true
+});
 
-const db = pgpDbInstanceCreator(
-  'postgres://aakash:password@localhost:5432/taskDb'
-)
+const db = pgpDbInstanceCreator('postgres://aakash:password@localhost:5432/taskDb');
 
-export default db
+export default db;

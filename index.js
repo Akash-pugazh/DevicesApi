@@ -1,15 +1,15 @@
-import express, { Router } from 'express'
-import usersRouter from './routes/users.js'
-import devicesRouter from './routes/devices.js'
-import entriesRouter from './routes/entries.js'
-import authRouter from './routes/auth.js'
-import configureRoutes, { RouterEndPoint } from './util/configureRoutes.js'
-import errorHandler from './middleware/errorHandler.js'
-import setGlobalMiddlewares from './middleware/index.js'
+import express from 'express';
+import usersRouter from './routes/users.js';
+import devicesRouter from './routes/devices.js';
+import entriesRouter from './routes/entries.js';
+import authRouter from './routes/auth.js';
+import configureRoutes, { RouterEndPoint } from './util/configureRoutes.js';
+import errorHandler from './middleware/errorHandler.js';
+import setGlobalMiddlewares from './middleware/index.js';
 
-const server = express()
+const server = express();
 
-setGlobalMiddlewares({ server })
+setGlobalMiddlewares({ server });
 
 configureRoutes({
   server: server,
@@ -17,10 +17,10 @@ configureRoutes({
     new RouterEndPoint('/auth', authRouter),
     new RouterEndPoint('/users', usersRouter),
     new RouterEndPoint('/devices', devicesRouter),
-    new RouterEndPoint('/entries', entriesRouter),
-  ],
-})
+    new RouterEndPoint('/entries', entriesRouter)
+  ]
+});
 
-errorHandler(server)
+errorHandler(server);
 
-export default server
+export default server;
