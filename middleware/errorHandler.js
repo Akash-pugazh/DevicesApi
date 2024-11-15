@@ -1,9 +1,9 @@
 import CustomError, { ERROR_TYPES } from '../util/CustomError.js';
-import swaggerValidation from 'openapi-validator-middleware';
+import openApiValidator from 'openapi-validator-middleware';
 
 export default function errorHandler(server) {
   server.use((err, req, res, next) => {
-    if (err instanceof swaggerValidation.InputValidationError) {
+    if (err instanceof openApiValidator.InputValidationError) {
       const customErrMap = err.errors.map(err => {
         let field = err.split(' ')[0];
         field = field.includes('/') ? field.split('/')[1] : field;

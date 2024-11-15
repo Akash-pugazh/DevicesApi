@@ -7,14 +7,18 @@ export default new (class UserRepository extends BaseRepository {
   }
 
   async findByEmail({ email }) {
-    return await db.oneOrNone(`SELECT * FROM ${this.table} WHERE email = $1`, [email]);
+    return await db.oneOrNone(`SELECT * FROM users WHERE email = $1 AND isactive = TRUE`, [email]);
   }
 
   async findByName({ name }) {
     return await this.customQuery(`SELECT * FROM users WHERE name ILIKE $1`, [`%${name}%`]);
   }
 
-  async insertUser({ name, email, password }) {
-    return await this.insertOne({ name, email, password });
+  async deleteById({ id }) {
+    return await this.customQuery(`UPDATE users SET isactive = FALSE WHERE id = $1`, [id]);
+  }
+
+  async insertUser({ name, email, password, isadmin }) {
+    return await this.insertOne({ name, email, password, isadmin });
   }
 })('users');

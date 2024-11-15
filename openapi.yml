@@ -135,7 +135,6 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
-  /users/create:
     post:
       tags:
         - USERS
@@ -164,6 +163,9 @@ paths:
                 password:
                   type: string
                   minLength: 8
+                isAdmin:
+                  type: boolean
+                  default: false
               required:
                 - name
                 - email

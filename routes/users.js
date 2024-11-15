@@ -3,6 +3,7 @@ import { ValidationConstraint, validateFields } from '../util/vaildator.js';
 import { LoginValidationFields } from './auth.js';
 import tryCatchWrapper from '../util/tryCatchWrapper.js';
 import UserService from '../services/user-service.js';
+import openApiValidator from 'openapi-validator-middleware';
 
 const userRouter = Router();
 
@@ -16,9 +17,17 @@ const UserCreateValidationFields = Object.assign(
   LoginValidationFields
 );
 
+userRouter.route('/').get(openApiValidator.validate, tryCatchWrapper(UserService.getUsers)).post(
+  openApiValidator.validate,
+  tryCatchWrapper(UserService.checkIsAdminMiddeware),
+  tryCatchWrapper(UserService.createUser)
+);
 userRouter
-  .route('/')
-  .get(tryCatchWrapper(UserService.getUsers))
-  .post(validateFields(UserCreateValidationFields), tryCatchWrapper(UserService.createUser));
+  .route('/:id')
+  .delete(
+    openApiValidator.validate,
+    tryCatchWrapper(UserService.checkIsAdminMiddeware),
+    tryCatchWrapper(UserService.deleteUser)
+  );
 
 export default userRouter;

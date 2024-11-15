@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { ValidationConstraint } from '../util/vaildator.js';
 import tryCatchWrapper from '../util/tryCatchWrapper.js';
 import AuthService from '../services/auth-service.js';
-import swaggerValidation from 'openapi-validator-middleware';
+import openApiValidator from 'openapi-validator-middleware';
 
 const authRouter = Router();
 
@@ -24,7 +24,7 @@ export const RefreshValidationFields = {
   })
 };
 
-authRouter.route('/login').post(swaggerValidation.validate, tryCatchWrapper(AuthService.loginUser));
-authRouter.route('/refresh').post(swaggerValidation.validate, tryCatchWrapper(AuthService.generateAccessToken));
+authRouter.route('/login').post(openApiValidator.validate, tryCatchWrapper(AuthService.loginUser));
+authRouter.route('/refresh').post(openApiValidator.validate, tryCatchWrapper(AuthService.generateAccessToken));
 
 export default authRouter;

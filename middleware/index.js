@@ -4,10 +4,10 @@ import session from 'express-session';
 import tryCatchWrapper from '../util/tryCatchWrapper.js';
 import accessTokenCheck from './accessTokenCheck.js';
 import { Config } from '../config.js';
-import swaggerValidation from 'openapi-validator-middleware';
+import openApiValidator from 'openapi-validator-middleware';
 
 export default function setGlobalMiddlewares({ server }) {
-  swaggerValidation.init(Config.OPEN_API_PATH, {
+  openApiValidator.init(Config.OPEN_API_PATH, {
     beautifyErrors: true,
     framework: 'express'
   });
