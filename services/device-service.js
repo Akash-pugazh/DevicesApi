@@ -36,14 +36,20 @@ export default new (class DeviceService {
 
     const validDevice = await DeviceService.isDeviceValid(deviceId)
     if (!validDevice) {
-      throw new CustomError(404, 'Device not found')
+      throw new CustomError({
+        statusCode: 404,
+        errorMessage: 'Device not found',
+      })
     }
 
     const isDeviceAvailableToRent = await DeviceService.isDeviceAvailableToRent(
       deviceId
     )
     if (!isDeviceAvailableToRent) {
-      throw new CustomError(400, 'Device is taken')
+      throw new CustomError({
+        statusCode: 400,
+        errorMessage: 'Device is taken',
+      })
     }
 
     const DEFAULT_ENTRY_REASON = 'WFH'
@@ -64,7 +70,10 @@ export default new (class DeviceService {
       deviceId
     )
     if (!isUserDevice) {
-      throw new CustomError(400, 'Invalid Device Id')
+      throw new CustomError({
+        statusCode: 400,
+        errorMessage: 'Invalid Device Id',
+      })
     }
     await EntryRepository.updateEntryReturnedAt({
       user_id: userId,

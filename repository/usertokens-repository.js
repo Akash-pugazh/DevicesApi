@@ -1,4 +1,3 @@
-import db from '../db/index.js'
 import BaseRepository from './base-repository.js'
 import { Config } from '../config.js'
 

@@ -11,15 +11,26 @@ export default async function (req, res, next) {
   }
 
   const authHeader = req.headers.authorization
-  if (!authHeader) throw new CustomError(401, 'Auth Header not found')
+  if (!authHeader) {
+    throw new CustomError({
+      statusCode: 401,
+      errorMessage: 'Auth Header not found',
+    })
+  }
 
   const accessToken = authHeader.split(' ')[1]
-  if (!accessToken) throw new CustomError(401, 'Access token not found')
+  if (!accessToken) {
+    throw new CustomError({
+      statusCode: 401,
+      errorMessage: 'Access token not found',
+    })
+  }
+  
   const tokenData = await usertokensRepository.findOne({
     access_token: accessToken,
   })
   if (!tokenData || tokenData.expiresat.getTime() < Date.now()) {
-    throw new CustomError(401, 'Unauthorized')
+    throw new CustomError({ statusCode: 401, errorMessage: 'Unauthorized' })
   }
   req.userId = tokenData.user_id
   next()

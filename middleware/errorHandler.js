@@ -1,4 +1,4 @@
-import CustomError from '../util/CustomError.js'
+import CustomError, { ERROR_TYPES } from '../util/CustomError.js'
 import swaggerValidation from 'openapi-validator-middleware'
 
 export default function errorHandler(server) {
@@ -12,7 +12,11 @@ export default function errorHandler(server) {
           message: err,
         }
       })
-      throw new CustomError(400, ...customErrMap)
+      throw new CustomError({
+        statusCode: 400,
+        errorType: ERROR_TYPES.INPUT_VALIDATION,
+        errorMessage: customErrMap,
+      })
     } else {
       next(err)
     }

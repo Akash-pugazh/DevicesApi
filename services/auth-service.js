@@ -7,11 +7,19 @@ export default new (class AuthService {
   async loginUser(req, res) {
     const { email, password } = req.body
     const dbResponse = await UserRepository.findByEmail({ email })
-    if (!dbResponse) throw new CustomError(404, 'User not found')
+    if (!dbResponse)
+      throw new CustomError({
+        statusCode: 404,
+        errorMessage: 'User Not Found',
+      })
 
     const { password: passwordFromDb, ...userPayload } = dbResponse
     const isValidPassword = await bcrypt.compare(password, passwordFromDb)
-    if (!isValidPassword) throw new CustomError(400, 'Invalid Password')
+    if (!isValidPassword)
+      throw new CustomError({
+        statusCode: 400,
+        errorMessage: 'Invalid Password',
+      })
 
     const { access_token, refresh_token } =
       await AuthService.#createAndStoreTokens(userPayload.id)
@@ -31,7 +39,10 @@ export default new (class AuthService {
     })
 
     if (!dbRes) {
-      throw new CustomError(401, 'Invalid Refresh Token')
+      throw new CustomError({
+        statusCode: 401,
+        errorMessage: 'Invalid Refresh Tokens',
+      })
     }
     const data = await AuthService.#updateAccessToken(dbRes.user_id)
     res.status(200).send({
