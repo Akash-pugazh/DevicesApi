@@ -5,6 +5,7 @@ import tryCatchWrapper from '../util/tryCatchWrapper.js';
 import accessTokenCheck from './accessTokenCheck.js';
 import { Config } from '../config.js';
 import openApiValidator from 'openapi-validator-middleware';
+import Log from '../util/Log.js';
 
 export default function setGlobalMiddlewares({ server }) {
   openApiValidator.init(Config.OPEN_API_PATH, {
@@ -23,5 +24,6 @@ export default function setGlobalMiddlewares({ server }) {
       }
     })
   );
+  server.use(Log.reqLogMiddleware());
   server.use(tryCatchWrapper(accessTokenCheck));
 }

@@ -3,6 +3,7 @@ import { ValidationConstraint } from '../util/vaildator.js';
 import tryCatchWrapper from '../util/tryCatchWrapper.js';
 import AuthService from '../services/auth-service.js';
 import openApiValidator from 'openapi-validator-middleware';
+import Log from '../util/Log.js';
 
 const authRouter = Router();
 const validatorFn = openApiValidator.validate;
