@@ -15,6 +15,7 @@ export default class Log {
           .map(en => `{ ${en[0]} : ${en[1]} }`)
           .join(', ')}\nHostname: ${req.hostname}\nIpAddress: ${req.ip}`
       );
+      next();
     };
   }
 }
