@@ -11,10 +11,23 @@ export default class Log {
   static reqLogMiddleware() {
     return function (req, res, next) {
       Log.i(
-        `Endpoint: ${req.originalUrl}\nRequest Method: ${req.method}\nRequest Body: ${Object.entries(req.body)
+        `-----------------------------------REQUEST-------------------------------------\nEndpoint: ${req.originalUrl}\nRequest Method: ${req.method}\nRequest Body: ${Object.entries(
+          req.body
+        )
           .map(en => `{ ${en[0]} : ${en[1]} }`)
           .join(', ')}\nHostname: ${req.hostname}\nIpAddress: ${req.ip}`
       );
+      res
+        .on('finish', () => {
+          Log.i(
+            `---------------------------------RESPONSE--------------------------------\nStatus: ${res.statusCode}\nStatusMessage: ${res.statusMessage}`
+          );
+        })
+        .on('error', err => {
+          Log.e(
+            `-----------------------------------ERROR---------------------------------\nErrorType: ${err.errorType}\nErrorMessages: ${JSON.stringify(err.errorMessages)}`
+          );
+        });
       next();
     };
   }
