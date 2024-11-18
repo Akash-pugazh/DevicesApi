@@ -1,8 +1,5 @@
-import { config } from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-
-config();
 
 const ROOT_DIR = path.dirname(fileURLToPath(import.meta.url));
 

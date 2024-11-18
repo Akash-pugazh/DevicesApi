@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Router } from 'express';
 import usersRouter from './routes/users.js';
 import devicesRouter from './routes/devices.js';
 import entriesRouter from './routes/entries.js';

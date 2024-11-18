@@ -13,5 +13,6 @@ userRouter
 userRouter
   .route('/:id')
   .delete(validatorFn, tryCatchWrapper(UserService.checkIsAdminMiddeware), tryCatchWrapper(UserService.deleteUser));
+userRouter.route('/change-password').post(validatorFn, tryCatchWrapper(UserService.changePassword));
 
 export default userRouter;

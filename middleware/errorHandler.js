@@ -23,7 +23,7 @@ export default function errorHandler(server) {
   });
 
   server.use((err, req, res, next) => {
-    res.emit('error', err);
+    // TODO: res.emit('error', err); UNCOMMENT LATER
     if (err instanceof CustomError) {
       return res.status(err.statusCode).json(err.constructErrJsonMessage());
     }

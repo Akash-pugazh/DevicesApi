@@ -231,6 +231,9 @@
                   "password": {
                     "type": "string",
                     "minLength": 8
+                  },
+                  "isAdmin": {
+                    "type": "boolean"
                   }
                 },
                 "required": ["name", "email", "password"],
@@ -295,6 +298,93 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/users/change-password": {
+      "post": {
+        "description": "Change password only if the old password provided in body is valid",
+        "summary": "Change user password",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": ["USERS"],
+        "operationId": "updateUserPassword",
+        "requestBody": {
+          "required": true,
+          "description": "Request body for user password updation",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "oldPassword": {
+                    "type": "string"
+                  },
+                  "newPassword": {
+                    "type": "string"
+                  }
+                },
+                "required": ["oldPassword", "newPassword"],
+                "minProperties": 2,
+                "maxProperties": 2,
+                "additionalProperties": false
+              },
+
+              "examples": {
+                "PasswordUpdateExample": {
+                  "value": {
+                    "oldPassword": "testpassword",
+                    "newPassword": "Password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "400": {
+            "description": "Bad request on password mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "InvalidPassowordErr": {
+                    "value": {
+                      "message": "Invalid Password"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Successful password updation",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "Successful password Updation": {
+                    "value": "Password Updated"
+                  }
+                }
+              }
+            }
           }
         }
       }

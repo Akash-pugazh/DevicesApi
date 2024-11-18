@@ -24,6 +24,6 @@ export default function setGlobalMiddlewares({ server }) {
       }
     })
   );
-  server.use(Log.reqLogMiddleware());
+  // TODO server.use(Log.reqLogMiddleware()); UNCOMMENT LATER
   server.use(tryCatchWrapper(accessTokenCheck));
 }

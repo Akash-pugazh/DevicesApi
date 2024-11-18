@@ -6,20 +6,23 @@ import UserTokensRepository from '../repository/usertokens-repository.js';
 export default new (class AuthService {
   async loginUser(req, res) {
     const { email, password } = req.body;
-    const dbResponse = await UserRepository.findByEmail({ email });
-    if (!dbResponse)
+    const caseInsensitiveEmail = email.toLowerCase().trim();
+    const dbResponse = await UserRepository.findByEmail({ email: caseInsensitiveEmail });
+    if (!dbResponse) {
       throw new CustomError({
         statusCode: 404,
         errorMessage: 'User Not Found'
       });
+    }
 
     const { password: passwordFromDb, ...userPayload } = dbResponse;
     const isValidPassword = await bcrypt.compare(password, passwordFromDb);
-    if (!isValidPassword)
+    if (!isValidPassword) {
       throw new CustomError({
         statusCode: 400,
         errorMessage: 'Invalid Password'
       });
+    }
 
     const { access_token, refresh_token } = await AuthService.#createAndStoreTokens(userPayload.id);
 

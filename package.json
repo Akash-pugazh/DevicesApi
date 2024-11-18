@@ -4,19 +4,20 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "format": "prettier --write .",
     "configure": "./bin/db.sh",
-    "start:dev": "nodemon ./bin/exe",
-    "start": "node ./bin/exe"
+    "format": "prettier --write .",
+    "start": "node --env-file=.env ./bin/exe",
+    "start:dev": "node --watch --env-file=.env ./bin/exe",
+    "test": "node --watch --experimental-test-coverage --env-file=.env --test "
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
-    "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "express-session": "^1.18.1",
     "openapi-validator-middleware": "^3.2.6",
@@ -25,7 +26,6 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
-    "nodemon": "^3.1.7",
     "prettier": "^3.3.3"
   }
 }
