@@ -11,7 +11,7 @@ export default class Log {
   static reqLogMiddleware() {
     return function (req, res, next) {
       Log.i(
-        `-----------------------------------REQUEST-------------------------------------\nEndpoint: ${req.originalUrl}\nRequest Method: ${req.method}\nRequest Body: ${Object.entries(
+        `-------------------------------------REQUEST-----------------------------------\nEndpoint: ${req.originalUrl}\nRequest Method: ${req.method}\nRequest Body: ${Object.entries(
           req.body
         )
           .map(en => `{ ${en[0]} : ${en[1]} }`)
@@ -25,7 +25,7 @@ export default class Log {
         })
         .on('error', err => {
           Log.e(
-            `-----------------------------------ERROR---------------------------------\nErrorType: ${err.errorType}\nErrorMessages: ${JSON.stringify(err.errorMessages)}`
+            `----------------------------------ERROR---------------------------------\nErrorType: ${err.errorType}\nErrorMessages: ${JSON.stringify(err.errorMessages)}`
           );
         });
       next();
