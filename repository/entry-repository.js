@@ -57,10 +57,7 @@ export default new (class DeviceRepository extends BaseRepository {
   }
 
   async fetchEntryByUserAndDeviceId({ user_id, device_id }) {
-    return await db.oneOrNone(`SELECT * FROM entries WHERE user_id = $1 AND device_id = $2 AND returned_at IS NULL`, [
-      user_id,
-      device_id
-    ]);
+    return await this.findOne({ user_id, device_id, returned_at: null });
   }
 
   async updateEntryReturnedAt({ user_id, device_id }) {

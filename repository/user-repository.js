@@ -7,7 +7,11 @@ export default new (class UserRepository extends BaseRepository {
   }
 
   async findByEmail({ email }) {
-    return await db.oneOrNone(`SELECT * FROM users WHERE email = $1 AND isactive = TRUE`, [email]);
+    return await this.findOne({ email, isActive: true });
+  }
+
+  async findUserById({ id }) {
+    return await this.findOne({ id });
   }
 
   async findByName({ name }) {

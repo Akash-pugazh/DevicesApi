@@ -30,9 +30,12 @@ export default class BaseRepository {
       const matchCondition = arr[index + 1] ? (isMatchAll ? 'AND' : 'OR') : '';
       resQuery += isPartialFind
         ? `${condition} ILIKE $${index + 1} ${matchCondition} `
-        : `${condition} = $${index + 1} ${matchCondition} `;
+        : `${condition} ${conditions[condition] === null ? 'IS NULL' : '='} ${conditions[condition] !== null ? `$${index + 1}` : ''} ${matchCondition} `;
     });
-    return await db.oneOrNone(resQuery, Object.values(conditions));
+    return await this.getOneOrNull(
+      resQuery,
+      Object.values(conditions).filter(el => el !== null)
+    );
   }
 
   async find(conditions, isMatchAll = true, isPartialFind = false) {

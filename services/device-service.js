@@ -1,8 +1,9 @@
 import CustomError from '../util/CustomError.js';
 import DeviceRepository from '../repository/device-repository.js';
 import EntryRepository from '../repository/entry-repository.js';
+import UserRepository from '../repository/user-repository.js';
 
-export default new (class DeviceService {
+export class DeviceService {
   async getAllDevices(req, res) {
     let query = req.query.q;
     const searchQuery = `%${query}%`;
@@ -36,10 +37,7 @@ export default new (class DeviceService {
     res.status(200).send(data);
   }
 
-  async assignDevice(req, res) {
-    const userId = req.userId;
-    const { deviceId, reason } = req.body;
-
+  static async assignDeviceByUserIdAndDeviceIdHelper({ deviceId, reason, userId }) {
     const validDevice = await DeviceService.isDeviceValid(deviceId);
     if (!validDevice) {
       throw new CustomError({
@@ -63,12 +61,24 @@ export default new (class DeviceService {
       reason: reason ?? DEFAULT_ENTRY_REASON
     });
 
-    res.status(201).send('Device Rented');
+    this.status(201).send('Device Rented');
   }
 
-  async returnDevice(req, res) {
+  async assignDeviceByAdmin(req, res, next) {
+    const { userId, deviceId, reason } = req.body;
+    await UserRepository.findUserById({ id: req.userId }).then(async data => {
+      if (!data.isadmin || !userId) return next();
+      await DeviceService.assignDeviceByUserIdAndDeviceIdHelper.bind(res)({ deviceId, reason, userId });
+    });
+  }
+
+  async assignDevice(req, res) {
     const userId = req.userId;
-    const { deviceId, deviceStatus } = req.body;
+    const { deviceId, reason } = req.body;
+    await DeviceService.assignDeviceByUserIdAndDeviceIdHelper.bind(res)({ deviceId, reason, userId });
+  }
+
+  static async returnDeviceByUserIdAndDeviceIdHelper({ deviceId, deviceStatus, userId }) {
     const isUserDevice = await DeviceService.isUserHoldingDevice(userId, deviceId);
     if (!isUserDevice) {
       throw new CustomError({
@@ -85,7 +95,21 @@ export default new (class DeviceService {
       id: deviceId,
       status: deviceStatus ?? DEFAULT_DEVICE_STATUS
     });
-    res.status(200).send('Device Returned');
+    this.status(200).send('Device Returned');
+  }
+
+  async returnDeviceByAdmin(req, res, next) {
+    const { userId, deviceId, deviceStatus } = req.body;
+    await UserRepository.findUserById({ id: req.userId }).then(async data => {
+      if (!data.isadmin || !userId) return next();
+      await DeviceService.returnDeviceByUserIdAndDeviceIdHelper.bind(res)({ deviceId, deviceStatus, userId });
+    });
+  }
+
+  async returnDevice(req, res) {
+    const userId = req.userId;
+    const { deviceId, deviceStatus } = req.body;
+    await DeviceService.returnDeviceByUserIdAndDeviceIdHelper.bind(res)({ deviceId, deviceStatus, userId });
   }
 
   static isUserHoldingDevice = async (user_id, device_id) => {
@@ -105,4 +129,6 @@ export default new (class DeviceService {
       id: deviceId
     });
   };
-})();
+}
+
+export default new DeviceService();

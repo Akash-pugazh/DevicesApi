@@ -49,7 +49,7 @@ export default new (class DeviceRepository extends BaseRepository {
   }
 
   async isDeviceAvailableToRent({ id }) {
-    return db
+    return await db
       .none(`SELECT * FROM entries WHERE device_id = $1 AND returned_at IS NULL`, [id])
       .then(data => true)
       .catch(err => false);

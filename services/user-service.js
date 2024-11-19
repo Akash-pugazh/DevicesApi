@@ -3,7 +3,7 @@ import UserRepository from '../repository/user-repository.js';
 import { Config } from '../config.js';
 import CustomError from '../util/CustomError.js';
 
-export default new (class UserService {
+export class UserService {
   async getUsers(req, res) {
     const { q } = req.query;
     const data = q?.length >= 1 ? await UserRepository.findByName({ name: q }) : await UserRepository.getAll();
@@ -48,7 +48,6 @@ export default new (class UserService {
     const hashedPwd = bcrypt.hashSync(newPassword, Config.SALT_ROUNDS);
     UserRepository.update({ password: hashedPwd }, { id: user.id });
     res.status(200).send('Password Updated');
-
   }
 
   static async getUserById(userId) {
@@ -60,4 +59,6 @@ export default new (class UserService {
     if (!user.isadmin) throw new CustomError({ statusCode: 401, errorMessage: 'Unauthorized' });
     next();
   }
-})();
+}
+
+export default new UserService();

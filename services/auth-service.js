@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import UserRepository from '../repository/user-repository.js';
 import UserTokensRepository from '../repository/usertokens-repository.js';
 
-export default new (class AuthService {
+export class AuthService {
   async loginUser(req, res) {
     const { email, password } = req.body;
     const caseInsensitiveEmail = email.toLowerCase().trim();
@@ -65,4 +65,6 @@ export default new (class AuthService {
       refresh_token: refreshToken
     });
   }
-})();
+}
+
+export default new AuthService();
