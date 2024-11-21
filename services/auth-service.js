@@ -7,7 +7,7 @@ export class AuthService {
   async loginUser(req, res) {
     const { email, password } = req.body;
     const caseInsensitiveEmail = email.toLowerCase().trim();
-    const dbResponse = await UserRepository.findByEmail({ email: caseInsensitiveEmail });
+    const dbResponse = await UserRepository.findByEmail({ email: caseInsensitiveEmail, isActive: true });
     if (!dbResponse) {
       throw new CustomError({
         statusCode: 404,

@@ -6,8 +6,8 @@ export default new (class UserRepository extends BaseRepository {
     super(tablename);
   }
 
-  async findByEmail({ email }) {
-    return await this.findOne({ email, isActive: true });
+  async findByEmail({ email, isActive }) {
+    return await this.findOne({ email, isActive });
   }
 
   async findUserById({ id }) {
