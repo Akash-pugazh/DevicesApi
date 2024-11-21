@@ -8,7 +8,6 @@ import errorHandler from './middleware/errorHandler.js';
 import setGlobalMiddlewares from './middleware/index.js';
 
 const server = express();
-
 setGlobalMiddlewares({ server });
 
 configureRoutes({

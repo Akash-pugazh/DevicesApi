@@ -1,19 +1,21 @@
-import CustomError from '../util/CustomError.js';
+import CustomError, { ERROR_TYPES } from '../util/CustomError.js';
 import bcrypt from 'bcrypt';
 import UserRepository from '../repository/user-repository.js';
 import UserTokensRepository from '../repository/usertokens-repository.js';
+
+export function ConstructError({ statusCode, errorType = ERROR_TYPES.SIMPLE, errorMessage }) {
+  return new CustomError({ statusCode, errorType, errorMessage });
+}
 
 export class AuthService {
   async loginUser(req, res) {
     const { email, password } = req.body;
     const caseInsensitiveEmail = email.toLowerCase().trim();
-    const dbResponse = await UserRepository.findByEmail({ email: caseInsensitiveEmail, isActive: true });
-    if (!dbResponse) {
-      throw new CustomError({
-        statusCode: 404,
-        errorMessage: 'User Not Found'
-      });
-    }
+
+    const dbResponse = (await UserRepository.findByEmail({ email: caseInsensitiveEmail, isActive: true }))
+      .setupError(ConstructError({ statusCode: 404, errorMessage: 'User Not Found' }))
+      .setErrorCondition(data => !data)
+      .build();
 
     const { password: passwordFromDb, ...userPayload } = dbResponse;
     const isValidPassword = await bcrypt.compare(password, passwordFromDb);
@@ -35,17 +37,11 @@ export class AuthService {
 
   async generateAccessToken(req, res) {
     const { refreshToken } = req.body;
+    (await UserTokensRepository.findOne({ refresh_token: refreshToken }))
+      .setupError(ConstructError({ statusCode: 401, errorMessage: 'Invalid Refresh Token' }))
+      .setErrorCondition(data => !data)
+      .build();
 
-    const dbRes = await UserTokensRepository.findOne({
-      refresh_token: refreshToken
-    });
-
-    if (!dbRes) {
-      throw new CustomError({
-        statusCode: 401,
-        errorMessage: 'Invalid Refresh Tokens'
-      });
-    }
     const data = await AuthService.#updateAccessToken(refreshToken);
     res.status(200).send({
       message: 'Access Token generated',

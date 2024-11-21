@@ -1,24 +1,25 @@
 import db from '../db/index.js';
 import BaseRepository from './base-repository.js';
+import EntryRepository from './entry-repository.js';
 
 export default new (class DeviceRepository extends BaseRepository {
   constructor(tablename) {
     super(tablename);
   }
 
-  async fetchAllDevices() {
-    return await this.getAll();
+  fetchAllDevices() {
+    return this.getAll();
   }
 
-  async insertDevice({ name, model, status }) {
-    return await this.insertOne({ name, model, status });
+  insertDevice({ name, model, status }) {
+    return this.insertOne({ name, model, status });
   }
 
-  async fetchByNameOrModel({ searchQuery }) {
-    return await this.find({ name: searchQuery, model: searchQuery }, false, true);
+  fetchByNameOrModel({ searchQuery }) {
+    return this.find({ name: searchQuery, model: searchQuery }, false, true);
   }
 
-  async fetchOwnedDevices({ userId }) {
+  fetchOwnedDevices({ userId }) {
     const query = `
       SELECT 
         d.name device_name,
@@ -32,7 +33,7 @@ export default new (class DeviceRepository extends BaseRepository {
       WHERE returned_at IS NULL AND user_id = $1
     `;
     const values = [userId];
-    return await this.customQuery(query, values);
+    return this.customQuery(query, values);
   }
 
   async fetchInStockDevices() {
@@ -44,16 +45,11 @@ export default new (class DeviceRepository extends BaseRepository {
     return await this.customQuery(query);
   }
 
-  async findDeviceById({ id }) {
-    return await this.findOne({ id });
+  findDeviceById({ id }) {
+    return this.findOne({ id });
   }
 
-  async isDeviceAvailableToRent({ id }) {
-    return await db
-      .none(`SELECT * FROM entries WHERE device_id = $1 AND returned_at IS NULL`, [id])
-      .then(data => true)
-      .catch(err => false);
-  }
+
 
   async updateDeviceStatus({ id, status }) {
     return await this.update({ status }, { id });

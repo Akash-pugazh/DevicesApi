@@ -22,6 +22,14 @@ export default new (class DeviceRepository extends BaseRepository {
     LEFT JOIN devices d ON d.id = e.device_id    
     `;
 
+  async isDeviceTakenBasedOnTheEntryRecord({ device_id }) {
+    this.data = await db
+      .none(`SELECT * FROM ${this.table} WHERE device_id = $1 AND returned_at IS NULL`, [device_id])
+      .then(() => true)
+      .catch(() => false);
+    return this;
+  }
+
   async fetchAllEntries({ username, devicename }) {
     let query = this.selectEntriesBaseQuery;
     let values = [];
@@ -62,7 +70,7 @@ export default new (class DeviceRepository extends BaseRepository {
 
   async updateEntryReturnedAt({ user_id, device_id }) {
     return await this.customQuery(
-      `UPDATE entries SET returned_at = CURRENT_TIMESTAMP WHERE device_id = $2 AND user_id = $1`,
+      `UPDATE ${this.table} SET returned_at = CURRENT_TIMESTAMP WHERE device_id = $2 AND user_id = $1`,
       [user_id, device_id]
     );
   }

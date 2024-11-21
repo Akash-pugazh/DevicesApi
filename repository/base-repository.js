@@ -1,4 +1,6 @@
 import db from '../db/index.js';
+import CustomError from '../util/CustomError.js';
+import bcrypt from 'bcrypt';
 
 export default class BaseRepository {
   table;
@@ -6,6 +8,43 @@ export default class BaseRepository {
   constructor(tableName) {
     this.table = tableName;
     this.#BASE_QUERY = `SELECT * FROM ${this.table}`;
+    this.computeCb = null;
+    this.error = null;
+    this.data = null;
+  }
+
+  setupError(error) {
+    this.error = error;
+    return this;
+  }
+
+  build(returnDataCb) {
+    this.computeCb !== null && this.computeCb();
+    returnDataCb && returnDataCb(this.data);
+    return this.data;
+  }
+
+  errorThrowHelper() {
+    if (this.error === null) {
+      throw new CustomError({ statusCode: 500, errorMessage: 'Internal Server Error' });
+    } else {
+      throw this.error;
+    }
+  }
+
+  setErrorCondition(additionalChecks) {
+    this.computeCb = () => {
+      if (additionalChecks && additionalChecks(this.data)) {
+        this.errorThrowHelper();
+      }
+    };
+    return this;
+  }
+
+  async comparePassword(password, hashedPassword) {
+    const isValidPassword = await bcrypt.compare(password, hashedPassword);
+    this.data = isValidPassword;
+    return this;
   }
 
   async getAll() {
@@ -32,10 +71,12 @@ export default class BaseRepository {
         ? `${condition} ILIKE $${index + 1} ${matchCondition} `
         : `${condition} ${conditions[condition] === null ? 'IS NULL' : '='} ${conditions[condition] !== null ? `$${index + 1}` : ''} ${matchCondition} `;
     });
-    return await this.getOneOrNull(
+    const data = await this.getOneOrNull(
       resQuery,
       Object.values(conditions).filter(el => el !== null)
     );
+    this.data = data;
+    return this;
   }
 
   async find(conditions, isMatchAll = true, isPartialFind = false) {
@@ -46,7 +87,8 @@ export default class BaseRepository {
         ? `${condition} ILIKE $${index + 1} ${matchCondition} `
         : `${condition} = $${index + 1} ${matchCondition} `;
     });
-    return await this.customQuery(resQuery, Object.values(conditions));
+    await this.customQuery(resQuery, Object.values(conditions));
+    return this;
   }
 
   async update(data, conditions, isMatchAll = true) {
@@ -68,6 +110,7 @@ export default class BaseRepository {
   }
 
   async customQuery(query, values = []) {
-    return await db.query(query, values);
+    this.data = await db.query(query, values);
+    return this;
   }
 }

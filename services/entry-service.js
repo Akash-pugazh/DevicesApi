@@ -3,19 +3,23 @@ import EntryRepository from '../repository/entry-repository.js';
 export default new (class EntryService {
   async getAllEntries(req, res) {
     const { user, device } = req.query;
-    const data = await EntryRepository.fetchAllEntries({
-      username: user,
-      devicename: device
-    });
+    const data = (
+      await EntryRepository.fetchAllEntries({
+        username: user,
+        devicename: device
+      })
+    ).build();
     res.status(200).send(data);
   }
 
   async getEntriesByDate(req, res) {
     const { startDate, endDate } = req.query;
-    const data = await EntryRepository.fetchEntriesByDate({
-      startDate,
-      endDate
-    });
+    const data = (
+      await EntryRepository.fetchEntriesByDate({
+        startDate,
+        endDate
+      })
+    ).build();
     res.status(200).send(data);
   }
 })();

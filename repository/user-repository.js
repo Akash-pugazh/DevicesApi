@@ -6,23 +6,27 @@ export default new (class UserRepository extends BaseRepository {
     super(tablename);
   }
 
-  async findByEmail({ email, isActive }) {
-    return await this.findOne({ email, isActive });
+  fetchAllUsers() {
+    return this.getAll();
   }
 
-  async findUserById({ id }) {
-    return await this.findOne({ id });
+  findByEmail({ email, isActive }) {
+    return this.findOne({ email, isActive });
   }
 
-  async findByName({ name }) {
-    return await this.customQuery(`SELECT * FROM users WHERE name ILIKE $1`, [`%${name}%`]);
+  findUserById({ id }) {
+    return this.findOne({ id });
   }
 
-  async deleteById({ id }) {
-    return await this.customQuery(`UPDATE users SET isactive = FALSE WHERE id = $1`, [id]);
+  findByName({ name }) {
+    return this.customQuery(`SELECT * FROM users WHERE name ILIKE $1`, [`%${name}%`]);
   }
 
-  async insertUser({ name, email, password, isadmin }) {
-    return await this.insertOne({ name, email, password, isadmin });
+  deleteById({ id }) {
+    return this.customQuery(`UPDATE users SET isactive = FALSE WHERE id = $1`, [id]);
+  }
+
+  insertUser({ name, email, password, isadmin }) {
+    return this.insertOne({ name, email, password, isadmin });
   }
 })('users');
