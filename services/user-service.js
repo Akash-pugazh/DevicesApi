@@ -19,14 +19,15 @@ export class UserService {
     const { name, email, password, isAdmin } = req.body;
     const hashedPwd = bcrypt.hashSync(password, Config.SALT_ROUNDS);
     const DEFAULT_ADMIN_ROLE_STATUS = false;
-    await UserRepository.insertUser({
-      name,
-      email,
-      isadmin: isAdmin ?? DEFAULT_ADMIN_ROLE_STATUS,
-      password: hashedPwd
-    }).then(data => {
-      res.status(201).send(data);
-    });
+    const data = await (
+      await UserRepository.insertUser({
+        name,
+        email,
+        isadmin: isAdmin ?? DEFAULT_ADMIN_ROLE_STATUS,
+        password: hashedPwd
+      })
+    ).build();
+    res.status(201).send(data);
   }
 
   async deleteUser(req, res) {

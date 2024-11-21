@@ -18,9 +18,16 @@ export default class BaseRepository {
     return this;
   }
 
+  reset() {
+    this.error = null;
+    this.data = null;
+    this.computeCb = null;
+  }
+
   build(returnDataCb) {
     this.computeCb !== null && this.computeCb();
     returnDataCb && returnDataCb(this.data);
+    setTimeout(() => this.reset());
     return this.data;
   }
 
@@ -41,14 +48,9 @@ export default class BaseRepository {
     return this;
   }
 
-  async comparePassword(password, hashedPassword) {
-    const isValidPassword = await bcrypt.compare(password, hashedPassword);
-    this.data = isValidPassword;
-    return this;
-  }
-
   async getAll() {
-    return await this.customQuery(this.#BASE_QUERY);
+    await this.customQuery(this.#BASE_QUERY);
+    return this;
   }
 
   async insertOne(data) {
@@ -60,7 +62,8 @@ export default class BaseRepository {
       .map((_, index) => `$${index + 1}`)
       .join(', ');
     resQuery += `(${valStr}) RETURNING *`;
-    return await db.one(resQuery, Object.values(data));
+    this.data = await db.one(resQuery, Object.values(data));
+    return this;
   }
 
   async findOne(conditions, isMatchAll = true, isPartialFind = false) {
@@ -71,10 +74,12 @@ export default class BaseRepository {
         ? `${condition} ILIKE $${index + 1} ${matchCondition} `
         : `${condition} ${conditions[condition] === null ? 'IS NULL' : '='} ${conditions[condition] !== null ? `$${index + 1}` : ''} ${matchCondition} `;
     });
-    const data = await this.getOneOrNull(
-      resQuery,
-      Object.values(conditions).filter(el => el !== null)
-    );
+    const data = (
+      await this.getOneOrNull(
+        resQuery,
+        Object.values(conditions).filter(el => el !== null)
+      )
+    ).build();
     this.data = data;
     return this;
   }
@@ -102,11 +107,13 @@ export default class BaseRepository {
       const matchCondition = arr[index + 1] ? (isMatchAll ? 'AND' : 'OR') : '';
       updateQuery += `${condition} = $${valIndex++} ${matchCondition} `;
     });
-    return await this.customQuery(updateQuery, [...Object.values(data), ...Object.values(conditions)]);
+    await this.customQuery(updateQuery, [...Object.values(data), ...Object.values(conditions)]);
+    return this;
   }
 
   async getOneOrNull(query, values = []) {
-    return await db.oneOrNone(query, values);
+    this.data = await db.oneOrNone(query, values);
+    return this;
   }
 
   async customQuery(query, values = []) {

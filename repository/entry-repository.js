@@ -60,8 +60,8 @@ export default new (class DeviceRepository extends BaseRepository {
     return await this.customQuery(query, values);
   }
 
-  async insertEntry({ user_id, device_id, reason }) {
-    return await this.insertOne({ user_id, device_id, reason });
+  insertEntry({ user_id, device_id, reason }) {
+    return this.insertOne({ user_id, device_id, reason });
   }
 
   async fetchEntryByUserAndDeviceId({ user_id, device_id }) {

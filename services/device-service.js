@@ -26,7 +26,7 @@ export class DeviceService {
 
   async createDevice(req, res) {
     const { name, model, status } = req.body;
-    const deviceData = await DeviceRepository.insertDevice({ name, model, status: status ?? 'GOOD' });
+    const deviceData = (await DeviceRepository.insertDevice({ name, model, status: status ?? 'GOOD' })).build();
     return res.status(201).send(deviceData);
   }
 
@@ -76,7 +76,7 @@ export class DeviceService {
       user_id: userId,
       device_id: deviceId
     });
-    
+
     const DEFAULT_DEVICE_STATUS = 'GOOD';
     await DeviceRepository.updateDeviceStatus({
       id: deviceId,
