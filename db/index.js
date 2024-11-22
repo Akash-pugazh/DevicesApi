@@ -5,6 +5,4 @@ const pgpDbInstanceCreator = pgPromise({
   capSQL: true
 });
 
-const db = pgpDbInstanceCreator('postgres://aakash:password@localhost:5432/taskDb');
-
-export default db;
+export default pgpDbInstanceCreator('postgres://aakash:password@localhost:5432/taskDb');

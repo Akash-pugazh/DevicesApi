@@ -1,8 +1,7 @@
-import CustomError from '../util/CustomError.js';
+import { CustomError } from '../util/CustomError.js';
 import DeviceRepository from '../repository/device-repository.js';
 import EntryRepository from '../repository/entry-repository.js';
 import UserRepository from '../repository/user-repository.js';
-import { ConstructError } from './auth-service.js';
 
 export class DeviceService {
   async getAllDevices(req, res) {
@@ -19,7 +18,7 @@ export class DeviceService {
     let { id } = req.params;
     const data = await DeviceRepository.findOne({ id }).then(data => {
       return data
-        .setupError(ConstructError({ statusCode: 404, errorMessage: 'Invalid Device Id' }))
+        .setupError(CustomError({ statusCode: 404, errorMessage: 'Invalid Device Id' }))
         .setErrorCondition(data => !data)
         .build();
     });
@@ -110,7 +109,7 @@ export class DeviceService {
       device_id
     }).then(data => {
       return data
-        .setupError(ConstructError({ statusCode: 400, errorMessage: 'Invalid Device Id' }))
+        .setupError(CustomError({ statusCode: 400, errorMessage: 'Invalid Device Id' }))
         .setErrorCondition(data => !data)
         .build();
     });
@@ -121,7 +120,7 @@ export class DeviceService {
       id: deviceId
     }).then(data => {
       return data
-        .setupError(ConstructError({ statusCode: 404, errorMessage: 'Device not found' }))
+        .setupError(CustomError({ statusCode: 404, errorMessage: 'Device not found' }))
         .setErrorCondition(data => !data)
         .build();
     });
@@ -132,7 +131,7 @@ export class DeviceService {
       device_id: deviceId
     }).then(data => {
       return data
-        .setupError(ConstructError({ statusCode: 400, errorMessage: 'Device is taken' }))
+        .setupError(CustomError({ statusCode: 400, errorMessage: 'Device is taken' }))
         .setErrorCondition(data => !data)
         .build();
     });

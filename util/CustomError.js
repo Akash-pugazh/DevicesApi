@@ -1,9 +1,4 @@
-export const ERROR_TYPES = {
-  SIMPLE: 'SIMPLE',
-  INPUT_VALIDATION: 'INPUT'
-};
-
-export default class CustomError {
+export default class CustomErrorImpl {
   constructor({ statusCode, errorType = ERROR_TYPES.SIMPLE, errorMessage }) {
     this.statusCode = statusCode;
     this.errorType = errorType;
@@ -37,4 +32,13 @@ export default class CustomError {
       errors
     };
   }
+}
+
+export const ERROR_TYPES = {
+  SIMPLE: 'SIMPLE',
+  INPUT_VALIDATION: 'INPUT'
+};
+
+export function CustomError({ statusCode, errorType = ERROR_TYPES.SIMPLE, errorMessage }) {
+  return new CustomErrorImpl({ statusCode, errorType, errorMessage });
 }

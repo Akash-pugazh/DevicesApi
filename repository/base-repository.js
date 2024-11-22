@@ -1,5 +1,5 @@
 import db from '../db/index.js';
-import CustomError from '../util/CustomError.js';
+import { CustomError } from '../util/CustomError.js';
 
 export default class BaseRepository {
   table;
@@ -32,7 +32,7 @@ export default class BaseRepository {
 
   errorThrowHelper() {
     if (this.error === null) {
-      throw new CustomError({ statusCode: 500, errorMessage: 'Internal Server Error' });
+      throw CustomError({ statusCode: 500, errorMessage: 'Internal Server Error' });
     } else {
       throw this.error;
     }
@@ -82,7 +82,7 @@ export default class BaseRepository {
     return this;
   }
 
-  async find(conditions, isMatchAll = true, isPartialFind = false) {
+  async find(conditions, { isMatchAll = true, isPartialFind = false } = {}) {
     let resQuery = `${this.#BASE_QUERY} WHERE `;
     Object.keys(conditions).forEach((condition, index, arr) => {
       const matchCondition = arr[index + 1] ? (isMatchAll ? 'AND' : 'OR') : '';
@@ -90,7 +90,8 @@ export default class BaseRepository {
         ? `${condition} ILIKE $${index + 1} ${matchCondition} `
         : `${condition} = $${index + 1} ${matchCondition} `;
     });
-    return await this.customQuery(resQuery, Object.values(conditions));
+    let values = isPartialFind ? Object.values(conditions).map(cond => `%${cond}%`) : Object.values(conditions);
+    return await this.customQuery(resQuery, values);
   }
 
   async update(data, conditions, isMatchAll = true) {
