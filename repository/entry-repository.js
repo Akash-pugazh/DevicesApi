@@ -1,7 +1,7 @@
 import db from '../db/index.js';
 import BaseRepository from './base-repository.js';
 
-export default new (class DeviceRepository extends BaseRepository {
+export class EntryRepository extends BaseRepository {
   constructor(tableName) {
     super(tableName);
   }
@@ -72,6 +72,8 @@ export default new (class DeviceRepository extends BaseRepository {
     return await this.customQuery(
       `UPDATE ${this.table} SET returned_at = CURRENT_TIMESTAMP WHERE device_id = $2 AND user_id = $1`,
       [user_id, device_id]
-    )
+    );
   }
-})('entries');
+}
+
+export default new EntryRepository('entries');

@@ -91,6 +91,7 @@ export default class BaseRepository {
         : `${condition} = $${index + 1} ${matchCondition} `;
     });
     let values = isPartialFind ? Object.values(conditions).map(cond => `%${cond}%`) : Object.values(conditions);
+    console.log(resQuery, values);
     return await this.customQuery(resQuery, values);
   }
 

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import tryCatchWrapper from '../util/tryCatchWrapper.js';
-import DeviceService from '../services/device-service.js';
+import DevicesController from '../controllers/devices.js';
 import openApiValidator from 'openapi-validator-middleware';
 import UserService from '../services/user-service.js';
 
@@ -9,16 +9,24 @@ const validatorFn = openApiValidator.validate;
 
 deviceRouter
   .route('/')
-  .get(validatorFn, tryCatchWrapper(DeviceService.getAllDevices))
-  .post(validatorFn, tryCatchWrapper(UserService.isAdminMiddleware), tryCatchWrapper(DeviceService.createDevice));
-deviceRouter.route('/owned').get(validatorFn, tryCatchWrapper(DeviceService.getOwnedDevices));
-deviceRouter.route('/instock').get(validatorFn, tryCatchWrapper(DeviceService.getInStockDevices));
+  .get(validatorFn, tryCatchWrapper(DevicesController.getDevices))
+  .post(validatorFn, tryCatchWrapper(UserService.isAdminMiddleware), tryCatchWrapper(DevicesController.createDevice));
+deviceRouter.route('/owned').get(validatorFn, tryCatchWrapper(DevicesController.getOwnedDevices));
+deviceRouter.route('/instock').get(validatorFn, tryCatchWrapper(DevicesController.getInStockDevices));
 deviceRouter
   .route('/assign')
-  .post(validatorFn, tryCatchWrapper(DeviceService.assignDeviceByAdmin), tryCatchWrapper(DeviceService.assignDevice));
+  .post(
+    validatorFn,
+    tryCatchWrapper(DevicesController.assignDeviceByAdmin),
+    tryCatchWrapper(DevicesController.assignDevice)
+  );
 deviceRouter
   .route('/release')
-  .post(validatorFn, tryCatchWrapper(DeviceService.returnDeviceByAdmin), tryCatchWrapper(DeviceService.returnDevice));
-deviceRouter.route('/:id').get(validatorFn, tryCatchWrapper(DeviceService.getDevice));
+  .post(
+    validatorFn,
+    tryCatchWrapper(DevicesController.returnDeviceByAdmin),
+    tryCatchWrapper(DevicesController.returnDevice)
+  );
+deviceRouter.route('/:id').get(validatorFn, tryCatchWrapper(DevicesController.getDeviceById));
 
 export default deviceRouter;

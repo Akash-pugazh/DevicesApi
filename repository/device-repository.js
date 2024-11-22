@@ -1,22 +1,21 @@
 import db from '../db/index.js';
 import BaseRepository from './base-repository.js';
-import EntryRepository from './entry-repository.js';
 
-export default new (class DeviceRepository extends BaseRepository {
+export class DeviceRepository extends BaseRepository {
   constructor(tablename) {
     super(tablename);
   }
 
-  fetchAllDevices() {
+  findDevices() {
     return this.getAll();
+  }
+
+  findByNameOrModel({ searchQuery }) {
+    return this.find({ name: searchQuery, model: searchQuery }, { isMatchAll: false, isPartialFind: true });
   }
 
   insertDevice({ name, model, status }) {
     return this.insertOne({ name, model, status });
-  }
-
-  fetchByNameOrModel({ searchQuery }) {
-    return this.find({ name: searchQuery, model: searchQuery }, false, true);
   }
 
   fetchOwnedDevices({ userId }) {
@@ -36,22 +35,22 @@ export default new (class DeviceRepository extends BaseRepository {
     return this.customQuery(query, values);
   }
 
-  async fetchInStockDevices() {
+  fetchInStockDevices() {
     const query = `
       SELECT * FROM devices WHERE 
       status <> 'DEFECT' AND 
       id NOT IN (SELECT device_id FROM entries WHERE returned_at IS NULL)
     `;
-    return await this.customQuery(query);
+    return this.customQuery(query);
   }
 
   findDeviceById({ id }) {
     return this.findOne({ id });
   }
 
-
-
-  async updateDeviceStatus({ id, status }) {
-    return await this.update({ status }, { id });
+  updateDeviceStatus({ id, status }) {
+    return this.update({ status }, { id });
   }
-})('devices');
+}
+
+export default new DeviceRepository('devices');
