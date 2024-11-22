@@ -19,7 +19,7 @@ export class UserService {
     const { name, email, password, isAdmin } = req.body;
     const hashedPwd = bcrypt.hashSync(password, Config.SALT_ROUNDS);
     const DEFAULT_ADMIN_ROLE_STATUS = false;
-    const data = await (
+    const data = (
       await UserRepository.insertUser({
         name,
         email,
@@ -50,7 +50,7 @@ export class UserService {
       throw new CustomError({ statusCode: 400, errorMessage: 'Invalid Password' });
     }
     const hashedPwd = bcrypt.hashSync(newPassword, Config.SALT_ROUNDS);
-    UserRepository.update({ password: hashedPwd }, { id });
+    (await UserRepository.updatePassword({ id, password: hashedPwd })).build();
     res.status(200).send('Password Updated');
   }
 

@@ -78,10 +78,12 @@ export class DeviceService {
     });
 
     const DEFAULT_DEVICE_STATUS = 'GOOD';
-    await DeviceRepository.updateDeviceStatus({
-      id: deviceId,
-      status: deviceStatus ?? DEFAULT_DEVICE_STATUS
-    });
+    (
+      await DeviceRepository.updateDeviceStatus({
+        id: deviceId,
+        status: deviceStatus ?? DEFAULT_DEVICE_STATUS
+      })
+    ).build();
     this.status(200).send('Device Returned');
   }
 

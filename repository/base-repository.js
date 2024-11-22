@@ -92,8 +92,7 @@ export default class BaseRepository {
         ? `${condition} ILIKE $${index + 1} ${matchCondition} `
         : `${condition} = $${index + 1} ${matchCondition} `;
     });
-    await this.customQuery(resQuery, Object.values(conditions));
-    return this;
+    return await this.customQuery(resQuery, Object.values(conditions));
   }
 
   async update(data, conditions, isMatchAll = true) {
@@ -107,8 +106,7 @@ export default class BaseRepository {
       const matchCondition = arr[index + 1] ? (isMatchAll ? 'AND' : 'OR') : '';
       updateQuery += `${condition} = $${valIndex++} ${matchCondition} `;
     });
-    await this.customQuery(updateQuery, [...Object.values(data), ...Object.values(conditions)]);
-    return this;
+    return await this.customQuery(updateQuery, [...Object.values(data), ...Object.values(conditions)]);
   }
 
   async getOneOrNull(query, values = []) {

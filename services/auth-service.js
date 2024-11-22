@@ -26,7 +26,7 @@ export class AuthService {
       });
     }
 
-    const { access_token, refresh_token } = await AuthService.#createAndStoreTokens(userPayload.id);
+    const { access_token, refresh_token } = (await AuthService.#createAndStoreTokens(userPayload.id)).build();
 
     res.status(200).send({
       message: 'Logged In',
@@ -42,7 +42,7 @@ export class AuthService {
       .setErrorCondition(data => !data)
       .build();
 
-    const data = await AuthService.#updateAccessToken(refreshToken);
+    const data = (await AuthService.#updateAccessToken(refreshToken)).build();
     res.status(200).send({
       message: 'Access Token generated',
       accessToken: data.access_token,

@@ -6,6 +6,10 @@ export default new (class UserRepository extends BaseRepository {
     super(tablename);
   }
 
+  updatePassword({ id, password }) {
+    return this.update({ password }, { id });
+  }
+
   fetchAllUsers() {
     return this.getAll();
   }
