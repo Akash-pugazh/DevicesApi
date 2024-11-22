@@ -26,13 +26,12 @@ export default async function (req, res, next) {
       errorMessage: 'Access token not found'
     });
   }
-  (
-    await usertokensRepository.findOne({
-      access_token: accessToken
-    })
-  )
-    .setupError(ConstructError({ statusCode: 401, errorMessage: 'Unauthorized' }))
-    .setErrorCondition(data => !data || data.expiresat.getTime() < Date.now())
-    .build(data => (req.userId = data.user_id));
+  const data = await usertokensRepository.findOne({ access_token: accessToken }).then(data => {
+    return data
+      .setupError(ConstructError({ statusCode: 401, errorMessage: 'Unauthorized' }))
+      .setErrorCondition(data => !data || data.expiresat.getTime() < Date.now())
+      .build();
+  });
+  req.userId = data.user_id;
   next();
 }

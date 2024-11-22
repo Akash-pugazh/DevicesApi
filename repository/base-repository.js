@@ -1,6 +1,5 @@
 import db from '../db/index.js';
 import CustomError from '../util/CustomError.js';
-import bcrypt from 'bcrypt';
 
 export default class BaseRepository {
   table;
@@ -49,8 +48,7 @@ export default class BaseRepository {
   }
 
   async getAll() {
-    await this.customQuery(this.#BASE_QUERY);
-    return this;
+    return await this.customQuery(this.#BASE_QUERY);
   }
 
   async insertOne(data) {

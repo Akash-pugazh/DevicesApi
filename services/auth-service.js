@@ -12,10 +12,12 @@ export class AuthService {
     const { email, password } = req.body;
     const caseInsensitiveEmail = email.toLowerCase().trim();
 
-    const dbResponse = (await UserRepository.findByEmail({ email: caseInsensitiveEmail, isActive: true }))
-      .setupError(ConstructError({ statusCode: 404, errorMessage: 'User Not Found' }))
-      .setErrorCondition(data => !data)
-      .build();
+    const dbResponse = await UserRepository.findByEmail({ email: caseInsensitiveEmail, isActive: true }).then(data => {
+      return data
+        .setupError(ConstructError({ statusCode: 404, errorMessage: 'User Not Found' }))
+        .setErrorCondition(data => !data)
+        .build();
+    });
 
     const { password: passwordFromDb, ...userPayload } = dbResponse;
     const isValidPassword = await bcrypt.compare(password, passwordFromDb);
@@ -26,7 +28,9 @@ export class AuthService {
       });
     }
 
-    const { access_token, refresh_token } = (await AuthService.#createAndStoreTokens(userPayload.id)).build();
+    const { access_token, refresh_token } = await AuthService.#createAndStoreTokens(userPayload.id).then(data => {
+      return data.build();
+    });
 
     res.status(200).send({
       message: 'Logged In',
@@ -37,12 +41,17 @@ export class AuthService {
 
   async generateAccessToken(req, res) {
     const { refreshToken } = req.body;
-    (await UserTokensRepository.findOne({ refresh_token: refreshToken }))
-      .setupError(ConstructError({ statusCode: 401, errorMessage: 'Invalid Refresh Token' }))
-      .setErrorCondition(data => !data)
-      .build();
+    await UserTokensRepository.findOne({ refresh_token: refreshToken }).then(data => {
+      return data
+        .setupError(ConstructError({ statusCode: 401, errorMessage: 'Invalid Refresh Token' }))
+        .setErrorCondition(data => !data)
+        .build();
+    });
 
-    const data = (await AuthService.#updateAccessToken(refreshToken)).build();
+    const data = await AuthService.#updateAccessToken(refreshToken).then(data => {
+      return data.build();
+    });
+    
     res.status(200).send({
       message: 'Access Token generated',
       accessToken: data.access_token,

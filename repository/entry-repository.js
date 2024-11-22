@@ -72,6 +72,6 @@ export default new (class DeviceRepository extends BaseRepository {
     return await this.customQuery(
       `UPDATE ${this.table} SET returned_at = CURRENT_TIMESTAMP WHERE device_id = $2 AND user_id = $1`,
       [user_id, device_id]
-    );
+    )
   }
 })('entries');

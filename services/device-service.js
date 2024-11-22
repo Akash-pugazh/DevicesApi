@@ -9,24 +9,29 @@ export class DeviceService {
     let query = req.query.q;
     const searchQuery = `%${query}%`;
     const data = query
-      ? (await DeviceRepository.fetchByNameOrModel({ searchQuery })).build()
-      : (await DeviceRepository.fetchAllDevices()).build();
+      ? await DeviceRepository.fetchByNameOrModel({ searchQuery }).then(data => data.build())
+      : await DeviceRepository.fetchAllDevices().then(data => data.build());
 
     return res.status(200).send(data);
   }
 
   async getDevice(req, res) {
     let { id } = req.params;
-    const data = (await DeviceRepository.findOne({ id }))
-      .setupError(ConstructError({ statusCode: 404, errorMessage: 'Invalid Device Id' }))
-      .setErrorCondition(data => !data)
-      .build();
+    const data = await DeviceRepository.findOne({ id }).then(data => {
+      return data
+        .setupError(ConstructError({ statusCode: 404, errorMessage: 'Invalid Device Id' }))
+        .setErrorCondition(data => !data)
+        .build();
+    });
     return res.status(200).send(data);
   }
 
   async createDevice(req, res) {
     const { name, model, status } = req.body;
-    const deviceData = (await DeviceRepository.insertDevice({ name, model, status: status ?? 'GOOD' })).build();
+    const deviceData = await DeviceRepository.insertDevice({ name, model, status: status ?? 'GOOD' }).then(data => {
+      return data.build();
+    });
+
     return res.status(201).send(deviceData);
   }
 
@@ -78,12 +83,11 @@ export class DeviceService {
     });
 
     const DEFAULT_DEVICE_STATUS = 'GOOD';
-    (
-      await DeviceRepository.updateDeviceStatus({
-        id: deviceId,
-        status: deviceStatus ?? DEFAULT_DEVICE_STATUS
-      })
-    ).build();
+
+    await DeviceRepository.updateDeviceStatus({
+      id: deviceId,
+      status: deviceStatus ?? DEFAULT_DEVICE_STATUS
+    });
     this.status(200).send('Device Returned');
   }
 
@@ -101,37 +105,37 @@ export class DeviceService {
   }
 
   static isUserHoldingDevice = async (user_id, device_id) => {
-    return (
-      await EntryRepository.fetchEntryByUserAndDeviceId({
-        user_id,
-        device_id
-      })
-    )
-      .setupError(ConstructError({ statusCode: 400, errorMessage: 'Invalid Device Id' }))
-      .setErrorCondition(data => !data)
-      .build();
+    return await EntryRepository.fetchEntryByUserAndDeviceId({
+      user_id,
+      device_id
+    }).then(data => {
+      return data
+        .setupError(ConstructError({ statusCode: 400, errorMessage: 'Invalid Device Id' }))
+        .setErrorCondition(data => !data)
+        .build();
+    });
   };
 
   static isDeviceValid = async deviceId => {
-    return (
-      await DeviceRepository.findDeviceById({
-        id: deviceId
-      })
-    )
-      .setupError(ConstructError({ statusCode: 404, errorMessage: 'Device not found' }))
-      .setErrorCondition(data => !data)
-      .build();
+    return await DeviceRepository.findDeviceById({
+      id: deviceId
+    }).then(data => {
+      return data
+        .setupError(ConstructError({ statusCode: 404, errorMessage: 'Device not found' }))
+        .setErrorCondition(data => !data)
+        .build();
+    });
   };
 
   static checkIsDeviceCurrentlyTaken = async deviceId => {
-    return (
-      await EntryRepository.isDeviceTakenBasedOnTheEntryRecord({
-        device_id: deviceId
-      })
-    )
-      .setupError(ConstructError({ statusCode: 400, errorMessage: 'Device is taken' }))
-      .setErrorCondition(data => !data)
-      .build();
+    return await EntryRepository.isDeviceTakenBasedOnTheEntryRecord({
+      device_id: deviceId
+    }).then(data => {
+      return data
+        .setupError(ConstructError({ statusCode: 400, errorMessage: 'Device is taken' }))
+        .setErrorCondition(data => !data)
+        .build();
+    });
   };
 }
 
