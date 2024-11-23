@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { Config } from '../config.js';
+import { ERROR_HTTP_CODES, ErrorFactory } from '../util/CustomError.js';
 
 export default async function configureRoute({ server, basePath = Config.ROUTES_BASE_PATH }) {
   const routeData = await fs.readdir(path.resolve(basePath), { recursive: true }).then(data => {
@@ -20,4 +21,8 @@ export default async function configureRoute({ server, basePath = Config.ROUTES_
       server.use(formattedRouteStr, module.default);
     }
   }
+
+  server.use((req, res, next) => {
+    throw ErrorFactory.throwError(ERROR_HTTP_CODES.NOT_FOUND, 'Route Not Found');
+  });
 }
