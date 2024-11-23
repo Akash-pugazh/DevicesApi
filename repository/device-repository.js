@@ -1,7 +1,6 @@
-import db from '../db/index.js';
 import BaseRepository from './base-repository.js';
 
-export class DeviceRepository extends BaseRepository {
+export default new (class DeviceRepository extends BaseRepository {
   constructor(tablename) {
     super(tablename);
   }
@@ -14,8 +13,16 @@ export class DeviceRepository extends BaseRepository {
     return this.find({ name: searchQuery, model: searchQuery }, { isMatchAll: false, isPartialFind: true });
   }
 
+  findDeviceById({ id }) {
+    return this.findOne({ id });
+  }
+
   insertDevice({ name, model, status }) {
     return this.insertOne({ name, model, status });
+  }
+
+  updateDeviceStatus({ id, status }) {
+    return this.update({ status }, { id });
   }
 
   fetchOwnedDevices({ userId }) {
@@ -43,14 +50,4 @@ export class DeviceRepository extends BaseRepository {
     `;
     return this.customQuery(query);
   }
-
-  findDeviceById({ id }) {
-    return this.findOne({ id });
-  }
-
-  updateDeviceStatus({ id, status }) {
-    return this.update({ status }, { id });
-  }
-}
-
-export default new DeviceRepository('devices');
+})('devices');

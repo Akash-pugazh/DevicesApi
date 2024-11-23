@@ -1,6 +1,6 @@
 import EntryService from '../services/entry-service.js';
 
-export class EntriesController {
+export default new (class EntriesController {
   async getAllEntries(req, res) {
     const { user, device } = req.query;
     const data = await EntryService.getEntriesByUserOrDevice({ user, device });
@@ -12,6 +12,4 @@ export class EntriesController {
     const data = await EntryService.getEntriesByDate({ startDate, endDate });
     res.status(200).send(data);
   }
-}
-
-export default new EntriesController();
+})();

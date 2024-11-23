@@ -1,4 +1,4 @@
-import CustomError, { ERROR_TYPES, ErrorFactory, HTTP_CODES } from '../util/CustomError.js';
+import CustomError, { ERROR_TYPES, ErrorFactory, ERROR_HTTP_CODES } from '../util/CustomError.js';
 import openApiValidator from 'openapi-validator-middleware';
 
 export default function errorHandler(server) {
@@ -12,7 +12,7 @@ export default function errorHandler(server) {
           message: err
         };
       });
-      ErrorFactory.throwError(HTTP_CODES.BAD_REQUEST, customErrMap, ERROR_TYPES.INPUT_VALIDATION);
+      ErrorFactory.throwError(ERROR_HTTP_CODES.BAD_REQUEST, customErrMap, ERROR_TYPES.INPUT_VALIDATION);
     } else {
       next(err);
     }

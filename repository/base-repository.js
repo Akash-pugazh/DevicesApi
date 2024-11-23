@@ -1,5 +1,5 @@
 import db from '../db/index.js';
-import { ErrorFactory, HTTP_CODES } from '../util/CustomError.js';
+import { ErrorFactory, ERROR_HTTP_CODES } from '../util/CustomError.js';
 
 export default class BaseRepository {
   table;
@@ -32,7 +32,7 @@ export default class BaseRepository {
 
   errorThrowHelper() {
     if (this.error === null) {
-      ErrorFactory.throwError(HTTP_CODES.INTERNAL_SERVER_ERROR);
+      ErrorFactory.throwError(ERROR_HTTP_CODES.INTERNAL_SERVER_ERROR);
     } else {
       throw this.error;
     }

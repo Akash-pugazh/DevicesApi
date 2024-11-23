@@ -35,7 +35,7 @@ export default class CustomErrorImpl {
   }
 }
 
-export const HTTP_CODES = {
+export const ERROR_HTTP_CODES = {
   BAD_REQUEST: { code: 400, value: 'Bad Request' },
   UNAUTHORIZED: { code: 401, value: 'UnAuthorized' },
   NOT_FOUND: { code: 404, value: 'Not Found' },
@@ -48,9 +48,9 @@ export const ERROR_TYPES = {
 };
 
 class UnAuthorizedError extends CustomErrorImpl {
-  constructor({ errorMessage = HTTP_CODES.UNAUTHORIZED.value } = {}) {
+  constructor({ errorMessage = ERROR_HTTP_CODES.UNAUTHORIZED.value } = {}) {
     super({
-      statusCode: HTTP_CODES.UNAUTHORIZED.code,
+      statusCode: ERROR_HTTP_CODES.UNAUTHORIZED.code,
       errorType: ERROR_TYPES.SIMPLE,
       errorMessage
     });
@@ -58,9 +58,9 @@ class UnAuthorizedError extends CustomErrorImpl {
 }
 
 class BadRequestError extends CustomErrorImpl {
-  constructor({ errorMessage = HTTP_CODES.BAD_REQUEST.value, errorType = ERROR_TYPES.SIMPLE } = {}) {
+  constructor({ errorMessage = ERROR_HTTP_CODES.BAD_REQUEST.value, errorType = ERROR_TYPES.SIMPLE } = {}) {
     super({
-      statusCode: HTTP_CODES.BAD_REQUEST.code,
+      statusCode: ERROR_HTTP_CODES.BAD_REQUEST.code,
       errorType: errorType,
       errorMessage
     });
@@ -68,9 +68,9 @@ class BadRequestError extends CustomErrorImpl {
 }
 
 class NotFoundError extends CustomErrorImpl {
-  constructor({ errorMessage = HTTP_CODES.NOT_FOUND.value } = {}) {
+  constructor({ errorMessage = ERROR_HTTP_CODES.NOT_FOUND.value } = {}) {
     super({
-      statusCode: HTTP_CODES.NOT_FOUND.code,
+      statusCode: ERROR_HTTP_CODES.NOT_FOUND.code,
       errorType: ERROR_TYPES.SIMPLE,
       errorMessage
     });
@@ -78,9 +78,9 @@ class NotFoundError extends CustomErrorImpl {
 }
 
 class InternalServerError extends CustomErrorImpl {
-  constructor({ errorMessage = HTTP_CODES.INTERNAL_SERVER_ERROR.value } = {}) {
+  constructor({ errorMessage = ERROR_HTTP_CODES.INTERNAL_SERVER_ERROR.value } = {}) {
     super({
-      statusCode: HTTP_CODES.INTERNAL_SERVER_ERROR.code,
+      statusCode: ERROR_HTTP_CODES.INTERNAL_SERVER_ERROR.code,
       errorType: ERROR_TYPES.SIMPLE,
       errorMessage
     });
@@ -90,13 +90,13 @@ class InternalServerError extends CustomErrorImpl {
 export class ErrorFactory {
   static createError(err, errorMessage, errType) {
     switch (err) {
-      case HTTP_CODES.BAD_REQUEST:
+      case ERROR_HTTP_CODES.BAD_REQUEST:
         return new BadRequestError({ errorMessage, errorType: errType });
-      case HTTP_CODES.UNAUTHORIZED:
+      case ERROR_HTTP_CODES.UNAUTHORIZED:
         return new UnAuthorizedError({ errorMessage });
-      case HTTP_CODES.NOT_FOUND:
+      case ERROR_HTTP_CODES.NOT_FOUND:
         return new NotFoundError({ errorMessage });
-      case HTTP_CODES.INTERNAL_SERVER_ERROR:
+      case ERROR_HTTP_CODES.INTERNAL_SERVER_ERROR:
         return new InternalServerError({ errorMessage });
       default:
         return new InternalServerError({ errorMessage });

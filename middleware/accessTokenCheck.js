@@ -1,4 +1,4 @@
-import { ErrorFactory, HTTP_CODES } from '../util/CustomError.js';
+import { ErrorFactory, ERROR_HTTP_CODES } from '../util/CustomError.js';
 import { Config } from '../config.js';
 import tokensService from '../services/tokens-service.js';
 
@@ -12,7 +12,7 @@ export default async function (req, res, next) {
   }
 
   const accessToken = req.headers.authorization?.split(' ')[1];
-  if (!accessToken) ErrorFactory.throwError(HTTP_CODES.UNAUTHORIZED);
+  if (!accessToken) ErrorFactory.throwError(ERROR_HTTP_CODES.UNAUTHORIZED);
 
   const { user_id } = await tokensService.getTokenRecordByAccessToken({ access_token: accessToken });
   req.userId = user_id;

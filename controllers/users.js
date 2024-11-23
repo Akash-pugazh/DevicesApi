@@ -1,11 +1,12 @@
 import UserService from '../services/user-service.js';
+import HttpCodes from '../util/httpCodes.js';
 
-export class UsersController {
+export default new (class UsersController {
   async getUsers(req, res) {
     const { q } = req.query;
     const data = q?.length >= 1 ? await UserService.findUsersByName({ name: q }) : await UserService.findUsers();
 
-    res.status(200).send(data);
+    res.status(HttpCodes.OK).send(data);
   }
 
   async createUser(req, res) {
@@ -19,9 +20,8 @@ export class UsersController {
       password: hashedPwd,
       isadmin: isAdmin ?? DEFAULT_ADMIN_ROLE_STATUS
     });
-    console.log(data);
 
-    res.status(201).send(data);
+    res.status(HttpCodes.CREATED).send(data);
   }
 
   async deleteUser(req, res) {
@@ -30,7 +30,7 @@ export class UsersController {
     await UserService.findUserById({ id });
     await UserService.deleteUserById({ id });
 
-    res.status(200).send('User Deleted');
+    res.status(HttpCodes.OK).send('User Deleted');
   }
 
   async changeUserPassword(req, res) {
@@ -42,8 +42,6 @@ export class UsersController {
     const newHashedPwd = UserService.hashUserPassword({ password: newPassword });
     await UserService.updateUserPassword({ id: req.userId, password: newHashedPwd });
 
-    res.status(200).send('Password Updated');
+    res.status(HttpCodes.OK).send('Password Updated');
   }
-}
-
-export default new UsersController();
+})();

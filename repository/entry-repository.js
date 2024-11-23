@@ -1,7 +1,7 @@
 import db from '../db/index.js';
 import BaseRepository from './base-repository.js';
 
-export class EntryRepository extends BaseRepository {
+export default new (class EntryRepository extends BaseRepository {
   constructor(tableName) {
     super(tableName);
   }
@@ -22,12 +22,8 @@ export class EntryRepository extends BaseRepository {
     LEFT JOIN devices d ON d.id = e.device_id    
     `;
 
-  async isDeviceTakenBasedOnTheEntryRecord({ device_id }) {
-    this.data = await db
-      .none(`SELECT * FROM ${this.table} WHERE device_id = $1 AND returned_at IS NULL`, [device_id])
-      .then(() => true)
-      .catch(() => false);
-    return this;
+  insertEntry({ user_id, device_id, reason }) {
+    return this.insertOne({ user_id, device_id, reason });
   }
 
   async fetchAllEntries({ username, devicename }) {
@@ -60,10 +56,6 @@ export class EntryRepository extends BaseRepository {
     return await this.customQuery(query, values);
   }
 
-  insertEntry({ user_id, device_id, reason }) {
-    return this.insertOne({ user_id, device_id, reason });
-  }
-
   async fetchEntryByUserAndDeviceId({ user_id, device_id }) {
     return await this.findOne({ user_id, device_id, returned_at: null });
   }
@@ -74,6 +66,12 @@ export class EntryRepository extends BaseRepository {
       [user_id, device_id]
     );
   }
-}
 
-export default new EntryRepository('entries');
+  async isDeviceTakenBasedOnTheEntryRecord({ device_id }) {
+    this.data = await db
+      .none(`SELECT * FROM ${this.table} WHERE device_id = $1 AND returned_at IS NULL`, [device_id])
+      .then(() => true)
+      .catch(() => false);
+    return this;
+  }
+})('entries');

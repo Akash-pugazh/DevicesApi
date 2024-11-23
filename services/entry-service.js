@@ -1,6 +1,20 @@
 import EntryRepository from '../repository/entry-repository.js';
 
-export class EntryService {
+export default new (class EntryService {
+  getEntriesByUserOrDevice = async ({ user, device }) => {
+    return await EntryRepository.fetchAllEntries({
+      username: user,
+      devicename: device
+    }).then(data => data.build());
+  };
+
+  getEntriesByDate = async ({ startDate, endDate }) => {
+    return await EntryRepository.fetchEntriesByDate({
+      startDate,
+      endDate
+    }).then(data => data.build());
+  };
+
   insertEntry = async ({ user_id, device_id, reason }) => {
     return await EntryRepository.insertEntry({
       user_id,
@@ -15,20 +29,4 @@ export class EntryService {
       device_id
     });
   };
-
-  getEntriesByUserOrDevice = async ({ user, device }) => {
-    return await EntryRepository.fetchAllEntries({
-      username: user,
-      devicename: device
-    }).then(data => data.build());
-  };
-
-  getEntriesByDate = async ({ startDate, endDate }) => {
-    return await EntryRepository.fetchEntriesByDate({
-      startDate,
-      endDate
-    }).then(data => data.build());
-  };
-}
-
-export default new EntryService();
+})();
