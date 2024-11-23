@@ -1,6 +1,6 @@
-import usertokensRepository from '../repository/usertokens-repository.js';
-import { CustomError } from '../util/CustomError.js';
+import { ErrorFactory, HTTP_CODES } from '../util/CustomError.js';
 import { Config } from '../config.js';
+import tokensService from '../services/tokens-service.js';
 
 export default async function (req, res, next) {
   const canSkipRoute = req.originalUrl
@@ -11,27 +11,10 @@ export default async function (req, res, next) {
     return next();
   }
 
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    throw CustomError({
-      statusCode: 401,
-      errorMessage: 'Auth Header not found'
-    });
-  }
+  const accessToken = req.headers.authorization?.split(' ')[1];
+  if (!accessToken) ErrorFactory.throwError(HTTP_CODES.UNAUTHORIZED);
 
-  const accessToken = authHeader.split(' ')[1];
-  if (!accessToken) {
-    throw CustomError({
-      statusCode: 401,
-      errorMessage: 'Access token not found'
-    });
-  }
-  const data = await usertokensRepository.findOne({ access_token: accessToken }).then(data => {
-    return data
-      .setupError(CustomError({ statusCode: 401, errorMessage: 'Unauthorized' }))
-      .setErrorCondition(data => !data || data.expiresat.getTime() < Date.now())
-      .build();
-  });
-  req.userId = data.user_id;
+  const { user_id } = await tokensService.getTokenRecordByAccessToken({ access_token: accessToken });
+  req.userId = user_id;
   next();
 }

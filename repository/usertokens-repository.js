@@ -11,11 +11,10 @@ export class UserTokensRepository extends BaseRepository {
   }
 
   async insertTokens({ user_id }) {
-    await this.getOneOrNull(
+    return await this.getOneOrNull(
       `INSERT INTO user_tokens(user_id, access_token, refresh_token, expiresAt) VALUES ($1, gen_random_uuid(), gen_random_uuid(), NOW() + $2 * INTERVAL '1 MINUTE') RETURNING *`,
       [user_id, Config.TOKEN_EXPIRY]
     );
-    return this;
   }
 
   async updateAccessToken({ refresh_token }) {
@@ -23,6 +22,10 @@ export class UserTokensRepository extends BaseRepository {
       `UPDATE user_tokens SET access_token = GEN_RANDOM_UUID(), expiresat = NOW() + $2 * INTERVAL '1 MINUTE' WHERE refresh_token = $1 RETURNING *`,
       [refresh_token, Config.TOKEN_EXPIRY]
     );
+  }
+
+  async findByAccessToken({ access_token }) {
+    return await this.findOne({ access_token });
   }
 }
 

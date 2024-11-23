@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import tryCatchWrapper from '../util/tryCatchWrapper.js';
-import AuthService from '../services/auth-service.js';
 import openApiValidator from 'openapi-validator-middleware';
 import AuthController from '../controllers/auth.js';
 

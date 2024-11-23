@@ -1,14 +1,14 @@
 import bcrypt from 'bcrypt';
 import UserRepository from '../repository/user-repository.js';
 import { Config } from '../config.js';
-import { CustomError } from '../util/CustomError.js';
+import { ErrorFactory, HTTP_CODES } from '../util/CustomError.js';
 
 export class UserService {
   findUserByEmail = async ({ email }) => {
     const caseInsensitiveEmail = email.toLowerCase();
     return UserRepository.findByEmail({ email: caseInsensitiveEmail }).then(data => {
       return data
-        .setupError(CustomError({ statusCode: 404, errorMessage: 'User Not Found' }))
+        .setupError(ErrorFactory.createError(HTTP_CODES.NOT_FOUND, 'User Not Found'))
         .setErrorCondition(data => !data)
         .build();
     });
@@ -29,7 +29,7 @@ export class UserService {
   static staticFindByUserId = async ({ id, isactive = true } = {}) => {
     return await UserRepository.findUserById({ id, isactive }).then(data => {
       return data
-        .setupError(CustomError({ statusCode: 400, errorMessage: 'Invalid User Id' }))
+        .setupError(ErrorFactory.createError(HTTP_CODES.BAD_REQUEST, 'Invalid User Id'))
         .setErrorCondition(data => !data)
         .build();
     });
@@ -47,17 +47,12 @@ export class UserService {
 
   compareUserPassword = ({ password, hashedPwd }) => {
     const isValidPassword = bcrypt.compareSync(password, hashedPwd);
-    if (!isValidPassword) {
-      throw CustomError({
-        statusCode: 400,
-        errorMessage: 'Invalid Password'
-      });
-    }
+    if (!isValidPassword) ErrorFactory.throwError(HTTP_CODES.BAD_REQUEST, 'Invalid Password');
   };
 
   async isAdminMiddleware(req, res, next) {
     const userData = await UserService.staticFindByUserId({ id: req.userId, isactive: true });
-    if (!userData.isadmin) throw CustomError({ statusCode: 401, errorMessage: 'Unauthorized' });
+    if (!userData.isadmin) ErrorFactory.throwError(HTTP_CODES.UNAUTHORIZED);
     next();
   }
 

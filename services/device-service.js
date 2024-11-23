@@ -1,4 +1,4 @@
-import { CustomError } from '../util/CustomError.js';
+import { ErrorFactory, HTTP_CODES } from '../util/CustomError.js';
 import DeviceRepository from '../repository/device-repository.js';
 import EntryRepository from '../repository/entry-repository.js';
 
@@ -28,7 +28,7 @@ export class DeviceService {
   findDeviceById = async ({ id }) => {
     return await DeviceRepository.findDeviceById({ id }).then(data => {
       return data
-        .setupError(CustomError({ statusCode: 404, errorMessage: 'Device not found' }))
+        .setupError(ErrorFactory.createError(HTTP_CODES.NOT_FOUND, 'Device not found'))
         .setErrorCondition(data => !data)
         .build();
     });
@@ -37,7 +37,7 @@ export class DeviceService {
   isDeviceTaken = async ({ id }) => {
     return await EntryRepository.isDeviceTakenBasedOnTheEntryRecord({ device_id: id }).then(data => {
       return data
-        .setupError(CustomError({ statusCode: 400, errorMessage: 'Device is taken' }))
+        .setupError(ErrorFactory.createError(HTTP_CODES.BAD_REQUEST, 'Device is taken'))
         .setErrorCondition(data => !data)
         .build();
     });
@@ -49,7 +49,7 @@ export class DeviceService {
       device_id
     }).then(data => {
       return data
-        .setupError(CustomError({ statusCode: 400, errorMessage: 'Invalid Device Id' }))
+        .setupError(ErrorFactory.createError(HTTP_CODES.NOT_FOUND, 'Invalid device id'))
         .setErrorCondition(data => !data)
         .build();
     });
